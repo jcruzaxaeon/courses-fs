@@ -1,6 +1,26 @@
-# Fullstack Course Administration
+# Fullstack Course-Administration Application
+> [!NOTE] 
+> - Using **DEPRECATED** `create-react-app` per assignment spec
 
 ## Action Roster
+
+## Devlog
+
+### `Apr 9, 2024`
+
+
+### `Apr 8, 2024`+
+```bash
+#  ./api
+$ npm i cors
+$ npm audit fix
+```
+- [x] Test simple API request from client App.js
+    - `GET`, to `api/courses`
+- [x] Add CORS support
+
+
+## Notes
 
 ### `20240408`
 - "Works":
@@ -69,7 +89,8 @@ git push -u origin main
 ```
 
 ### Stack
-- React, JSX, React Router, React Context API, Create React App
+- `Node.js`, `Express`, `React`, `JSX`, `React Router`, `React Context API`, `Create React App`
+- `react-router-dom`
 
 ### Initial Specification
 - Use `React` to create a client for `school-courses-db` (Project 9t REST API)

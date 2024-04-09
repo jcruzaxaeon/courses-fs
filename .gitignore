@@ -18,6 +18,8 @@
 .env.test.local
 .env.production.local
 auto-readme.md
+ext.lnk
+bak.lnk
 
 npm-debug.log*
 yarn-debug.log*
