@@ -5,6 +5,7 @@
 ## Action Roster
 
 ## Devlog
+- `test client-api wiring with Test.js`
 
 ### `Apr 9, 2024`
 
@@ -91,6 +92,7 @@ git push -u origin main
 ### Stack
 - `Node.js`, `Express`, `React`, `JSX`, `React Router`, `React Context API`, `Create React App`
 - `react-router-dom`
+- `js-cookie`
 
 ### Initial Specification
 - Use `React` to create a client for `school-courses-db` (Project 9t REST API)
