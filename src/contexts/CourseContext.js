@@ -19,11 +19,15 @@ export const CourseProvider = (props) => {
         },
     ]);
 
+    const [courseDetail, setCourseDetail] = useState(null);
+
     return (
         <CourseContext.Provider value={
             {
                 courses,
+                courseDetail,
                 setCourses,
+                setCourseDetail,
             }
         }>
             {props.children}
