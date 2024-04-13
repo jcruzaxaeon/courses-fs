@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 
 import { CourseProvider } from './contexts/CourseContext';
+import { UserProvider } from './contexts/UserContext';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
@@ -14,9 +15,11 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
    <React.StrictMode>
       <BrowserRouter>
-         <CourseProvider>
-            <App />
-         </CourseProvider>
+         <UserProvider>
+            <CourseProvider>
+               <App />
+            </CourseProvider>
+         </UserProvider>
       </BrowserRouter>
    </React.StrictMode>
 );

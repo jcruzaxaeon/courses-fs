@@ -5,6 +5,8 @@
 ## Action Roster
 
 ## Devlog
+- `rough UserContext, UserSignIn-component`:
+- `rough CourseDetail component`:
 - `test client-api wiring with Test.js`
 
 ### `Apr 9, 2024`
