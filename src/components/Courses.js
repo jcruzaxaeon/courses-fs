@@ -2,6 +2,7 @@
 //  src\components\Courses.js
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 import { useEffect, useContext } from "react";
+import { Link } from 'react-router-dom';
 import CourseContext from "../contexts/CourseContext.js";
 
 const Courses = () => {
@@ -42,17 +43,17 @@ const Courses = () => {
 
    return (
       <div id="root">
-         <header>
+         {/* <header>
             <div className="wrap header--flex">
                <h1 className="header--logo"><a href="index.html">Courses</a></h1>
                <nav>
                   <ul className="header--signedout">
-                     <li><a href="sign-up.html">Sign Up</a></li>
-                     <li><a href="sign-in.html">Sign In</a></li>
+                     <li><Link to="sign-up.html">Sign Up</Link></li>
+                     <li><Link to="/signin">Sign In</Link></li>
                   </ul>
                </nav>
             </div>
-         </header>
+         </header> */}
          <main>
             <div className="wrap main--grid">
                {/***********************************************************************************

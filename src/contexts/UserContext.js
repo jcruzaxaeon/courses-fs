@@ -3,12 +3,14 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 import { useState, createContext } from "react";
+import { useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
 // import { api } from '../utils/apiHelper.js';
 
 const UserContext = createContext(null);
 
 export const UserProvider = (props) => {
+    const nav = useNavigate();
     const cookie = Cookies.get('authenticatedUser');
     const [authUser, setAuthUser] = useState(
         cookie
@@ -20,6 +22,7 @@ export const UserProvider = (props) => {
     //  SIGN IN
     /////////////////////////////////////////////////////////////////////////////////////////////////
     const signIn = async (credentials) => {
+        // Called By: UserSignIn.js
         // `Basic Auth` requires "name:pass"
         // const encodedCredentials = btoa(`${credentials.username}:${credentials.password}`);
 
@@ -52,7 +55,7 @@ export const UserProvider = (props) => {
             const user = data;
             console.log(`SUCCESS! ${user.username} is now signed in!`);
             setAuthUser(user);
-            // Cookies.set('authenticatedUser', JSON.stringify(user), { expires: 1/*day*/ });
+            Cookies.set('authenticatedUser', JSON.stringify(user), { expires: 1/*day*/ });
             return user;
             // nav('/authenticated');
             // return;
@@ -74,6 +77,7 @@ export const UserProvider = (props) => {
         setAuthUser(null);
         Cookies.remove('authenticatedUser');
         // Cookies.remove('defaultTheme');
+        nav('/');
     }
 
     return (

@@ -5,6 +5,9 @@
 ## Action Roster
 
 ## Devlog
+- `add ErrorList, cookies`
+    - [x] add cookies to UserContext
+    - [x] add error messaging to UserContext, UserSignIn with ErrorList
 - `rough UserContext, UserSignIn-component`:
 - `rough CourseDetail component`:
 - `test client-api wiring with Test.js`
@@ -21,7 +24,6 @@ $ npm audit fix
 - [x] Test simple API request from client App.js
     - `GET`, to `api/courses`
 - [x] Add CORS support
-
 
 ## Notes
 

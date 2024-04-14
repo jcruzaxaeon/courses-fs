@@ -2,11 +2,11 @@
 //  client\src\components\UserSignIn.js
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-import { useContext, useRef, /*useState*/ } from 'react';
-import { Link, useNavigate, /*useLocation*/ } from 'react-router-dom';
+import { useContext, useRef, useState } from 'react';
+import { /*Link,*/ useNavigate, /*useLocation*/ } from 'react-router-dom';
 // import ThemeContext from '../context/ThemeContext';
 import UserContext from '../contexts/UserContext.js';
-// import ErrorsDisplay from './ErrorDisplay';
+import ErrorList from './ErrorList.js';
 
 const UserSignin = () => {
     const { actions } = useContext(UserContext);
@@ -16,7 +16,7 @@ const UserSignin = () => {
     // State
     const username = useRef(null);
     const password = useRef(null);
-    // const [errors, setErrors] = useState([]);
+    const [errors, setErrors] = useState([]);
 
     const handleSubmit = async e => {
         e.preventDefault();
@@ -28,6 +28,8 @@ const UserSignin = () => {
 
         try {
             const user = await actions.signIn(credentials);
+            if (user) { nav('/'); return; }
+            setErrors(['Access Denied.']);
             // console.log(user);
         } catch (err) { console.log(err); }
     }
@@ -39,7 +41,7 @@ const UserSignin = () => {
 
     return (
         <>
-            <header>
+            {/* <header>
                 <div className="wrap header--flex">
                     <h1 className="header--logo"><a href="index.html">Courses</a></h1>
                     <nav>
@@ -49,11 +51,11 @@ const UserSignin = () => {
                         </ul>
                     </nav>
                 </div>
-            </header>
+            </header> */}
             <main>
                 <div className="form--centered">
                     <h2>Sign In</h2>
-
+                    <ErrorList errors={errors} />
                     <form onSubmit={handleSubmit}>
                         <label htmlFor="emailAddress">Email Address</label>
                         <input 

@@ -50,7 +50,7 @@ const CourseDetail = () => {
 
         return (
             <>
-                <header>
+                {/* <header>
                     <div className="wrap header--flex">
                         <h1 className="header--logo"><a href="index.html">Courses</a></h1>
                         <nav>
@@ -60,7 +60,7 @@ const CourseDetail = () => {
                             </ul>
                         </nav>
                     </div>
-                </header>
+                </header> */}
                 <main>
                     <div className="actions--bar">
                         <div className="wrap">
