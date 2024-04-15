@@ -17,6 +17,7 @@ export const UserProvider = (props) => {
             ? JSON.parse(cookie)
             : null
     );
+    const [pass, setPass] = useState(null);
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
     //  SIGN IN
@@ -55,6 +56,7 @@ export const UserProvider = (props) => {
             const user = data;
             console.log(`SUCCESS! ${user.username} is now signed in!`);
             setAuthUser(user);
+            setPass(credentials.password);
             Cookies.set('authenticatedUser', JSON.stringify(user), { expires: 1/*day*/ });
             return user;
             // nav('/authenticated');
@@ -75,6 +77,7 @@ export const UserProvider = (props) => {
     ////////////////////////////////////////////////////////////////////////////////////////////////
     const signOut = () => {
         setAuthUser(null);
+        setPass(null);
         Cookies.remove('authenticatedUser');
         // Cookies.remove('defaultTheme');
         nav('/');
@@ -83,6 +86,7 @@ export const UserProvider = (props) => {
     return (
         <UserContext.Provider value={{
             authUser,
+            pass,
             actions: {
                 signIn,
                 signOut,

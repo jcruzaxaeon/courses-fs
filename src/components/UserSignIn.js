@@ -28,7 +28,10 @@ const UserSignin = () => {
 
         try {
             const user = await actions.signIn(credentials);
-            if (user) { nav('/'); return; }
+            if (user) {
+                nav('/');
+                return;
+            }
             setErrors(['Access Denied.']);
             // console.log(user);
         } catch (err) { console.log(err); }

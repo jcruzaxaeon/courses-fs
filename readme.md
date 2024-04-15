@@ -5,6 +5,7 @@
 ## Action Roster
 
 ## Devlog
+- `rough UpdateCourse component`
 - `add ErrorList, cookies`
     - [x] add cookies to UserContext
     - [x] add error messaging to UserContext, UserSignIn with ErrorList

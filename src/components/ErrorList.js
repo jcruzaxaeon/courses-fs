@@ -6,8 +6,8 @@ const ErrorList = ({ errors }) => {
 
     if (errors.length) {
         errorList = (
-            <div>
-                <h2 className='error-list'>Errors</h2>
+            <div className='validation--errors'>
+                <h3 className='error-list'>Errors</h3>
                 <div className='error-list'>
                     <ul className='error-list'>
                         {errors.map((err, i) => <li key={i}>{err}</li>)}
@@ -30,6 +30,14 @@ const ErrorList = ({ errors }) => {
     //             </div>
     //         </div> )
     //     : null
+
+    // <div class="validation--errors">
+    //    <h3>Validation Errors</h3>
+    //    <ul>
+    //       <li>Please provide a value for "Title"</li>
+    //       <li>Please provide a value for "Description"</li>
+    //    </ul>
+    // </div>
 }
 
 export default ErrorList;
