@@ -8,16 +8,17 @@ import { createContext, useState } from 'react';
 const CourseContext = createContext(null);
 
 export const CourseProvider = (props) => {
-    const [courses, setCourses] = useState([
-        {
-            title: 'Default Title 1',
-            description: 'Default description 1.'
-        },
-        {
-            title: 'Default Title 2',
-            description: 'Default description 2.'
-        },
-    ]);
+    // const [courses, setCourses] = useState([
+    //     {
+    //         title: 'Default Title 1',
+    //         description: 'Default description 1.'
+    //     },
+    //     {
+    //         title: 'Default Title 2',
+    //         description: 'Default description 2.'
+    //     },
+    // ]);
+    const [courses, setCourses] = useState(null);
 
     const [courseDetail, setCourseDetail] = useState(null);
 

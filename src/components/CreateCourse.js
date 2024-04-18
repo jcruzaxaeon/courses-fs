@@ -18,8 +18,6 @@ const CreateCourse = () => {
    const materialsNeeded = useRef(null);
    const [errors, setErrors] = useState([]);
 
-   console.log('CreateCourse Start:', authUser);
-   // ...
    const handleSubmit = async e => {
       e.preventDefault();
 
