@@ -239,3 +239,92 @@ NOTE: Getting an "Exceed Expectations" grade.
 See the rubric in the "How You'll Be Graded" tab above for details on what you need to receive an "Exceed Expectations" grade.
 Passing grades are final. If you try for the "Exceeds Expectations" grade, but miss an item and receive a “Meets Expectations” grade, you won’t get a second chance. Exceptions can be made for items that have been misgraded in review.
 Always mention in the comments of your submission or any resubmission, what grade you are going for. Some students want their project to be rejected if they do not meet all Exceeds Expectations Requirements, others will try for all the "exceeds" requirement but do not mind if they pass with a Meets Expectations grade. Leaving a comment in your submission will help the reviewer understand which grade you are specifically going for
+
+## AI
+
+```
+I am working on a REACT browser-frontend-project for learning purposes as part of a coding academy curriculum.  This is not really a portfolio/capstone project (although I feel like it should be); it's really seems like it's just for "practice".  I can *only* create/modify the frontend code.  I am making requests to an API that requires 'Basic' authentication (i.e. `Basic username:password`) for every request.  Given this limitation, I need to be able to send the user's *password in plain-text* to the API for *every, single request*, and clear that ability when the user signs out or in 1 day, whichever occurs first.  It seems like the instructions are asking me to implement a solution where I keep the password in a cookie, in plain-text.  This leads me to believe that "security" is beyond the scope of this project, even though I personally believe that security *SHOULD ALWAYS* be within the scope of any project, but I digress.  How do I keep the password, at least *slightly* safer than storing it in a cookie in plain-text using only frontend code without modifying anything on the backend?
+
+Here is the relevant spec as written in the instructions.  (Note that implementing this "feature" is extra credit.):
+```
+Persist user credentials
+After successfully authenticating a user, persist their credentials using an HTTP cookie or local storage so that the user's authenticated state is maintained even if the application is reloaded or loaded into a new browser tab.
+```
+
+It sounds like they just want me to store the password in plain-text in a cookie or in local storage in the browser.  This is patently bad-practice.  However, I think they just want me to practice "persistence of data" while considering the security impications as beyond the scope of this project.  I think this point of view is entirely false, and feel like security implications should *always* be within the scope of any learning project in my opinion, but I digress.
+
+Regardless of my opinion, I need to match the expectations of the project spec.  I was considering doing something entirely security comprimised (see below), in such a way that after I submit this project for grading, I should be able to make some kind of API call to a secure location that could keep the secret safe in place of the hard-coded encryption-key:
+
+```javascript
+import { useState, createContext } from "react";
+import { useNavigate } from "react-router-dom";
+import Cookies from 'js-cookie';
+import CryptoJS from 'crypto-js';
+
+const UserContext = createContext(null);
+
+// Encryption/Decryption Key (Make sure to keep it secure!)
+const encryptionKey = 'YourEncryptionKey123';
+
+export const UserProvider = (props) => {
+    const nav = useNavigate();
+    const encryptedCookie = Cookies.get('authenticatedUser');
+
+    // Decrypt the cookie data if it exists
+    const decryptedCookie = encryptedCookie ? CryptoJS.AES.decrypt(encryptedCookie, encryptionKey).toString(CryptoJS.enc.Utf8) : null;
+
+    const [authUser, setAuthUser] = useState(
+        decryptedCookie
+            ? JSON.parse(decryptedCookie)
+            : null
+    );
+
+    // SIGN IN
+    const signIn = async (credentials) => {
+        // Fetch user data from the API...
+
+        // Encrypt and set the authenticated user data in the cookie
+        const encryptedUserData = CryptoJS.AES.encrypt(JSON.stringify(user), encryptionKey).toString();
+        Cookies.set('authenticatedUser', encryptedUserData, { expires: 1/*day*/ });
+
+        // Set the authenticated user in the context state
+        setAuthUser(user);
+    }
+
+    // SIGN OUT
+    const signOut = () => {
+        // Remove the encrypted cookie
+        Cookies.remove('authenticatedUser');
+        setAuthUser(null);
+        nav('/');
+    }
+
+    return (
+        <UserContext.Provider value={{
+            authUser,
+            actions: {
+                signIn,
+                signOut,
+            },
+        }}>
+            {props.children}
+        </UserContext.Provider>
+    );
+}
+
+export default UserContext;
+```
+
+Is there any other option that I might be able to take given the fact that I can only modify the frontend client?
+
+```
+```
+
+## Codedump
+```javascript
+    const [authUser, setAuthUser] = useState(
+        cookie
+            ? JSON.parse(cookie)
+            : null
+    );
+```

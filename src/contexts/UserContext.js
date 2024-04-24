@@ -1,23 +1,30 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //  src\contexts\UserContext.js
+//  ## Used by:
+//  
+//     ### Components
+//     - UpdateCourse.js
+//     - CreateCourse.js
+//     - CourseDetail.js
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 import { useState, createContext } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
-// import { api } from '../utils/apiHelper.js';
+import { arrayBufferToBase64 } from "../utils/cryptoUtils";
 
 const UserContext = createContext(null);
 
 export const UserProvider = (props) => {
     const nav = useNavigate();
-    const cookie = Cookies.get('authenticatedUser');
-    const [authUser, setAuthUser] = useState(
+    const cookie = Cookies.get('authData');
+    const [authData, setAuthData] = useState(
         cookie
             ? JSON.parse(cookie)
             : null
     );
-    const [pass, setPass] = useState(null);
+    const keyHex = process.env.REACT_APP_KEY_HEX;
+    console.log("AuthData: ", authData);
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
     //  SIGN IN
@@ -32,6 +39,7 @@ export const UserProvider = (props) => {
         //    headers: { Authorization: `Basic ${encodedCredentials}` },
         // }
         //   const response = await api('/users', 'GET', null, credentials);
+        console.log("Inner AuthData: ", authData);
 
         const endpoint = `users`;
         const method = 'GET';
@@ -55,17 +63,63 @@ export const UserProvider = (props) => {
             console.log(data);
             const user = data;
             console.log(`SUCCESS! ${user.username} is now signed in!`);
-            setAuthUser(user);
-            setPass(credentials.password);
-            Cookies.set('authenticatedUser', JSON.stringify(user), { expires: 1/*day*/ });
-            return user;
+
+            // Encryption
+            const encoder = new TextEncoder();
+            const decoder = new TextDecoder();
+            const secretKeyUint8 = new Uint8Array(
+                keyHex.match(/.{2}/g)
+                    .map(byte => parseInt(byte, 16))
+            );
+            const iv = window.crypto.getRandomValues(new Uint8Array(16));
+
+            console.log("Uint8 : ", secretKeyUint8);
+            console.log("Pass: ", credentials.password);
+
+            let key = await window.crypto.subtle.importKey(
+                'raw',
+                secretKeyUint8,
+                { name: 'AES-GCM', length: 256 },
+                false,
+                ['encrypt', 'decrypt']
+            );
+
+            let encodedPass = encoder.encode(`${credentials.password}`);
+            let cipherText = await window.crypto.subtle.encrypt(
+                { name: 'AES-GCM', iv: iv },
+                key,
+                encodedPass,
+            );
+
+            console.log("Encoded Password: ", encodedPass);
+            console.log("Cipher Text: ", cipherText);
+
+            const decrypted = await window.crypto.subtle.decrypt(
+                { name: 'AES-GCM', iv: iv },
+                key,
+                cipherText,
+            );
+
+            const plainPass = decoder.decode(decrypted);
+
+            console.log("Plain Password: ", plainPass);
+            console.log("Cipher Text: ", cipherText);
+            const cipherTextBase64 = arrayBufferToBase64(cipherText);
+
+            const authDataPackage = { user, iv, cipherTextBase64 };
+            console.log("authDataPackage: ", authDataPackage);
+            console.log('authDataPkg.user', authDataPackage.user);
+            Cookies.set('authData', JSON.stringify(authDataPackage), { expires: 1/*day*/ });
+            setAuthData(authDataPackage);
+
+            return authDataPackage.user;
             // nav('/authenticated');
             // return;
         }
-        if (response.status === 401) { 
+        if (response.status === 401) {
             console.log('Access Denied');
             // setErrors(['Access Denied']);
-            return null; 
+            return null;
         }
         throw new Error();
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -76,17 +130,16 @@ export const UserProvider = (props) => {
     //  SIGN OUT
     ////////////////////////////////////////////////////////////////////////////////////////////////
     const signOut = () => {
-        setAuthUser(null);
-        setPass(null);
-        Cookies.remove('authenticatedUser');
+        setAuthData(null);
+        // setPass(null);
+        Cookies.remove('authData');
         // Cookies.remove('defaultTheme');
         nav('/');
     }
 
     return (
         <UserContext.Provider value={{
-            authUser,
-            pass,
+            authData,
             actions: {
                 signIn,
                 signOut,

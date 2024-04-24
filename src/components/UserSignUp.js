@@ -5,8 +5,8 @@
 import { useContext, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import UserContext from "../contexts/UserContext";
-import ErrorList from "./ErrorList";
+import UserContext from "../contexts/UserContext.js";
+import ErrorList from "./ErrorList.js";
 
 const UserSignUp = () => {
    const { actions } = useContext(UserContext);

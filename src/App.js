@@ -11,6 +11,7 @@ import UserSignOut from './components/UserSignOut.js';
 import UserSignUp from './components/UserSignUp.js';
 import CreateCourse from './components/CreateCourse.js';
 import UpdateCourse from './components/UpdateCourse.js';
+import PrivateRoute from './components/PrivateRoute.js';
 
 function App() {
    return (
@@ -18,9 +19,10 @@ function App() {
          <Header />
          <Routes>
             <Route path='/' element={<Courses />} /> {/* /api/courses */}
-            <Route path='/courses/create' element={<CreateCourse />} />
-            <Route path='/courses/:id/update' element={<UpdateCourse />} />
             <Route path='courses/:id' element={<CourseDetail />} />  {/* GET  /api/courses/:id */}
+            <Route element={<PrivateRoute />}>
+               <Route path='/courses/create' element={<CreateCourse />} />
+               <Route path='/courses/:id/update' element={<UpdateCourse />} /></Route>
             <Route path='/signin' element={<UserSignin />} /> {/* GET  /api/users */}
             <Route path='/signup' element={<UserSignUp />} /> {/* POST /api/users */}
             <Route path='/signout' element={<UserSignOut />} />

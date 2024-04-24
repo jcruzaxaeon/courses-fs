@@ -4,15 +4,14 @@
 import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 
-import UserContext from "../contexts/UserContext";
+import UserContext from "../contexts/UserContext.js";
 // import CourseContext from "../contexts/CourseContext";
-import { iTry } from "../utils/i-try";
+import { iTry } from "../utils/i-try.js";
 
 const UpdateCourse = () => {
     const { id } = useParams();
     const nav = useNavigate();
-    const { authUser, pass } = useContext(UserContext);
-    // const { courses, setCourses } = useContext(CourseContext);
+    const { authData } = useContext(UserContext);
     const [course, setCourse] = useState(null);
     let [fn, ln, courses] = [null, null, null];
 
@@ -66,9 +65,9 @@ const UpdateCourse = () => {
         console.log('courseMaterials: ', course.materialsNeeded);
     }
 
-    console.log('authUser: ', authUser);
+    console.log('authData: ', authData);
     console.log('Course: ', course);
-    if (authUser && course) {
+    if (authData && course) {
         console.log("inside");
         return (
             <main>

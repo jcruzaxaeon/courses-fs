@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 import { useContext, useRef, useState } from 'react';
-import { /*Link,*/ useNavigate, /*useLocation*/ } from 'react-router-dom';
+import { /*Link,*/ useNavigate, useLocation } from 'react-router-dom';
 // import ThemeContext from '../context/ThemeContext';
 import UserContext from '../contexts/UserContext.js';
 import ErrorList from './ErrorList.js';
@@ -11,7 +11,9 @@ import ErrorList from './ErrorList.js';
 const UserSignin = () => {
     const { actions } = useContext(UserContext);
     const nav = useNavigate(); //"Call the useNavigate()-hook"
-    // const location = useLocation();
+    const location = useLocation();
+    const from = location.state?.from || '/';
+
 
     // State
     const username = useRef(null);
@@ -28,8 +30,10 @@ const UserSignin = () => {
 
         try {
             const user = await actions.signIn(credentials);
+            console.log('"user" post signin: ', user);
             if (user) {
-                nav('/');
+                // nav('/');
+                nav(from);
                 return;
             }
             setErrors(['Access Denied.']);
@@ -39,7 +43,8 @@ const UserSignin = () => {
 
     const handleCancel = e => {
         e.preventDefault();
-        nav('/');
+        // nav('/');
+        nav(from);
     }
 
     return (

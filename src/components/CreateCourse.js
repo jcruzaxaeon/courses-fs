@@ -4,11 +4,11 @@
 import { useContext, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import UserContext from "../contexts/UserContext";
-import ErrorList from "./ErrorList";
+import UserContext from "../contexts/UserContext.js";
+import ErrorList from "./ErrorList.js";
 
 const CreateCourse = () => {
-   const { authUser, pass } = useContext(UserContext);
+   const { authData, pass } = useContext(UserContext);
    const nav = useNavigate();
 
    // LOCAL
@@ -27,7 +27,7 @@ const CreateCourse = () => {
             description: description.current.value,
             estimatedTime: estimatedTime.current.value,
             materialsNeeded: materialsNeeded.current.value,
-            userId: authUser.id,
+            userId: authData.user.id,
          }
 
          console.log('In Try-Catch: ', course);
@@ -41,7 +41,7 @@ const CreateCourse = () => {
             },
          };
 
-         const encodedCredentials = btoa(`${authUser.emailAddress}:${pass}`);
+         const encodedCredentials = btoa(`${authData.user.emailAddress}:${pass}`);
          options.headers.Authorization = `Basic ${encodedCredentials}`;
 
          const response = await fetch(url, options);
@@ -67,7 +67,7 @@ const CreateCourse = () => {
       nav('/');
    }
 
-   if (authUser) {
+   if (authData) {
       return (
          <main>
             <div className="wrap">
@@ -85,7 +85,7 @@ const CreateCourse = () => {
                            name="courseTitle"
                            type="text"
                            defaultValue="" />
-                        <p>By {`${authUser.firstName} ${authUser.lastName}`}</p>
+                        <p>By {`${authData.user.firstName} ${authData.user.lastName}`}</p>
 
                         {/* COURSE DESCRIPTION */}
                         <label htmlFor="courseDescription">Course Description</label>

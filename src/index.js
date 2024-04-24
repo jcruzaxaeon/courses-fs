@@ -2,11 +2,11 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 
-import { CourseProvider } from './contexts/CourseContext';
-import { UserProvider } from './contexts/UserContext';
+import { CourseProvider } from './contexts/CourseContext.js';
+import { UserProvider } from './contexts/UserContext.js';
 import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import App from './App.js';
+import reportWebVitals from './reportWebVitals.js';
 
 import './styles/reset.css';
 import './styles/global.css';

@@ -2,34 +2,69 @@
 //  src\components\CourseDetail.js
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 import { useState, useEffect, useContext } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { iTry } from '../utils/i-try';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import UserContext from "../contexts/UserContext.js";
+
+import { iTry } from '../utils/i-try.js';
 // import CourseContext from "../contexts/CourseContext.js";
 
 const CourseDetail = () => {
+    const { authUser, pass } = useContext(UserContext);
     const { id } = useParams();
     // const { courseDetail, setCourseDetail } = useContext(CourseContext); // <<< Error occurs here
     // console.log(id);
     const [details, setDetails] = useState(null);
+    const nav = useNavigate();
 
     useEffect(() => {
-        iTry( async () => {
-                console.log("test");
-                const endpoint = `courses/${id}`;
-                const method = 'GET';
-                const url = `http://localhost:5000/api/${endpoint}`;
-                const options = {
-                    method,
-                    headers: {},
-                };
+        iTry(async () => {
+            const endpoint = `courses/${id}`;
+            const method = 'GET';
+            const url = `http://localhost:5000/api/${endpoint}`;
+            const options = {
+                method,
+                headers: {},
+            };
 
-                const response = await fetch(url, options);
-                const data = await response.json();
-                // console.log("API URL: ", url, "DATA: ", data);
-                setDetails(data);
+            const response = await fetch(url, options);
+            const data = await response.json();
+            setDetails(data);
         }, 'message');
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const handleDelete = () => {
+        iTry(async () => {
+            const endpoint = `courses/${id}`;
+            const method = 'DELETE';
+            const url = `http://localhost:5000/api/${endpoint}`;
+            const options = {
+                method,
+                headers: {
+                    'Content-type': 'application/json; charset=utf-8',
+                },
+            };
+
+            console.log(`${authUser.emailAddress}:${pass}`);
+            const encodedCredentials = btoa(`${authUser.emailAddress}:${pass}`);
+            options.headers.Authorization = `Basic ${encodedCredentials}`;
+
+            const res = await fetch(url, options);
+
+            console.log(res);
+            if (res.status === 204) {
+                console.log("DELETE Response:", res);
+                nav('/');
+                return;
+            }
+            if (res.status === 400) {
+                return;
+            }
+            throw new Error();
+
+        }, 'message');
+        nav('/');
+    }
 
     if (details) {
         const fn = details.student.firstName;
@@ -51,10 +86,11 @@ const CourseDetail = () => {
                             <Link
                                 className="button"
                                 to={`/courses/${id}/update`}>Update Course</Link>
-                            <Link 
+                            <Link
                                 className="button"
-                                to="#">Delete Course</Link>
-                            <Link 
+                                onClick={handleDelete}
+                                to="/">Delete Course</Link>
+                            <Link
                                 className="button button-secondary"
                                 to='/'>Return to List</Link>
                         </div>
