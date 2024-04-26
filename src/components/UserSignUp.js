@@ -51,10 +51,7 @@ const UserSignUp = () => {
          const response = await fetch(url, options);
 
          if (response.status === 201) {
-            await actions.signIn({
-               username: user.emailAddress,
-               password: user.password,
-            });
+            await actions.signIn(user.emailAddress, user.password);
             nav('/');
             return;
          }
@@ -69,7 +66,6 @@ const UserSignUp = () => {
          throw new Error();
 
       } catch (err) { console.log(err); }
-      // const data = await response.json();
    }
 
    const handleCancel = e => {

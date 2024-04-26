@@ -23,23 +23,27 @@ export const UserProvider = (props) => {
             ? JSON.parse(cookie)
             : null
     );
-    const keyHex = process.env.REACT_APP_KEY_HEX;
-    console.log("AuthData: ", authData);
+    const [fetchCourses, setFetchCourses] = useState(false);
+    const secretKeyHex = process.env.REACT_APP_SECRET_KEY_HEX;
+    // console.log("AuthData: ", authData);
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
     //  SIGN IN
     /////////////////////////////////////////////////////////////////////////////////////////////////
-    const signIn = async (credentials) => {
-        // Called By: UserSignIn.js
+    const signIn = async (emailAddress, password) => {
+        // Called By: 
+        // 1. UserSignIn.js
+        // 2. UserSignUp.js
         // `Basic Auth` requires "name:pass"
-        // const encodedCredentials = btoa(`${credentials.username}:${credentials.password}`);
+        // const encodedCredentials = btoa(`${username}:${password}`);
 
         // const fetchOptions = {
         //    method: 'GET',
         //    headers: { Authorization: `Basic ${encodedCredentials}` },
         // }
         //   const response = await api('/users', 'GET', null, credentials);
-        console.log("Inner AuthData: ", authData);
+        
+        // [!TODO] Add the "from" pattern for login to return user to previous page vs landing page
 
         const endpoint = `users`;
         const method = 'GET';
@@ -49,8 +53,8 @@ export const UserProvider = (props) => {
             headers: {},
         };
 
-        if (credentials) {
-            const encodedCredentials = btoa(`${credentials.username}:${credentials.password}`);
+        if (emailAddress && password) {
+            const encodedCredentials = btoa(`${emailAddress}:${password}`);
             options.headers.Authorization = `Basic ${encodedCredentials}`;
         }
 
@@ -60,21 +64,21 @@ export const UserProvider = (props) => {
         // setCourseDetail(data);
         // Guard Clauses
         if (response.status === 200) {
-            console.log(data);
+            // console.log(data);
             const user = data;
-            console.log(`SUCCESS! ${user.username} is now signed in!`);
+            console.log(`SUCCESS! ${user.emailAddress} is now signed in!`);
 
             // Encryption
             const encoder = new TextEncoder();
-            const decoder = new TextDecoder();
+            // const decoder = new TextDecoder();
             const secretKeyUint8 = new Uint8Array(
-                keyHex.match(/.{2}/g)
+                secretKeyHex.match(/.{2}/g)
                     .map(byte => parseInt(byte, 16))
             );
             const iv = window.crypto.getRandomValues(new Uint8Array(16));
 
-            console.log("Uint8 : ", secretKeyUint8);
-            console.log("Pass: ", credentials.password);
+            // console.log("Uint8 : ", secretKeyUint8);
+            // console.log("Pass: ", password);
 
             let key = await window.crypto.subtle.importKey(
                 'raw',
@@ -84,31 +88,29 @@ export const UserProvider = (props) => {
                 ['encrypt', 'decrypt']
             );
 
-            let encodedPass = encoder.encode(`${credentials.password}`);
+            let encodedPass = encoder.encode(`${password}`);
             let cipherText = await window.crypto.subtle.encrypt(
                 { name: 'AES-GCM', iv: iv },
                 key,
                 encodedPass,
             );
 
-            console.log("Encoded Password: ", encodedPass);
-            console.log("Cipher Text: ", cipherText);
+            // console.log("Encoded Password: ", encodedPass);
+            // console.log("Cipher Text: ", cipherText);
 
-            const decrypted = await window.crypto.subtle.decrypt(
-                { name: 'AES-GCM', iv: iv },
-                key,
-                cipherText,
-            );
+            // const decrypted = await window.crypto.subtle.decrypt(
+            //     { name: 'AES-GCM', iv: iv },
+            //     key,
+            //     cipherText,
+            // );
 
-            const plainPass = decoder.decode(decrypted);
+            // const plainPass = decoder.decode(decrypted);
 
-            console.log("Plain Password: ", plainPass);
-            console.log("Cipher Text: ", cipherText);
             const cipherTextBase64 = arrayBufferToBase64(cipherText);
+            const ivBase64 = arrayBufferToBase64(iv);
 
-            const authDataPackage = { user, iv, cipherTextBase64 };
-            console.log("authDataPackage: ", authDataPackage);
-            console.log('authDataPkg.user', authDataPackage.user);
+            const authDataPackage = { user, ivBase64, cipherTextBase64 };
+
             Cookies.set('authData', JSON.stringify(authDataPackage), { expires: 1/*day*/ });
             setAuthData(authDataPackage);
 
@@ -140,9 +142,11 @@ export const UserProvider = (props) => {
     return (
         <UserContext.Provider value={{
             authData,
+            fetchCourses,
             actions: {
                 signIn,
                 signOut,
+                setFetchCourses,
             },
         }}>
             {props.children}

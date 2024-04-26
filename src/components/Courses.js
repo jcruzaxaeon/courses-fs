@@ -1,11 +1,14 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //  client\src\components\Courses.js
+//  - Main / Landing page
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-import { useState, useEffect/*, useContext*/ } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Link } from 'react-router-dom';
 import { iTry } from "../utils/i-try.js";
+import UserContext from "../contexts/UserContext.js";
 
 const Courses = () => {
+   const { fetchCourses } = useContext(UserContext);
    const [courses, setCourses] = useState(null);
 
    useEffect(() => {
@@ -22,8 +25,8 @@ const Courses = () => {
          // const data = await response.json();
          setCourses(await response.json());
       }, 'Courses not found.');
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-   }, []);
+      // Xeslint-disable-next-line react-hooks/exhaustive-deps
+   }, [fetchCourses]);
 
    if (courses) {
       return (

@@ -7,8 +7,10 @@ import { useNavigate } from "react-router-dom";
 import UserContext from "../contexts/UserContext.js";
 import ErrorList from "./ErrorList.js";
 
+import { getPassword } from '../utils/cryptoUtils.js';
+
 const CreateCourse = () => {
-   const { authData, pass } = useContext(UserContext);
+   const { authData } = useContext(UserContext);
    const nav = useNavigate();
 
    // LOCAL
@@ -41,7 +43,10 @@ const CreateCourse = () => {
             },
          };
 
+         const pass = await getPassword();
          const encodedCredentials = btoa(`${authData.user.emailAddress}:${pass}`);
+         console.log("Unendcoded Credentials: ", `${authData.user.emailAddress}:${pass}`);
+         console.log("Encoded Credentials: ", encodedCredentials);
          options.headers.Authorization = `Basic ${encodedCredentials}`;
 
          const response = await fetch(url, options);

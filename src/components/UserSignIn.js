@@ -16,20 +16,19 @@ const UserSignin = () => {
 
 
     // State
-    const username = useRef(null);
+    const emailAddress = useRef(null);
     const password = useRef(null);
     const [errors, setErrors] = useState([]);
 
     const handleSubmit = async e => {
         e.preventDefault();
 
-        const credentials = {
-            username: username.current.value,
-            password: password.current.value,
-        };
+        const rEmailAddress = emailAddress.current.value;
+        const rPassword = password.current.value;
+
 
         try {
-            const user = await actions.signIn(credentials);
+            const user = await actions.signIn(rEmailAddress, rPassword);
             console.log('"user" post signin: ', user);
             if (user) {
                 // nav('/');
@@ -37,7 +36,6 @@ const UserSignin = () => {
                 return;
             }
             setErrors(['Access Denied.']);
-            // console.log(user);
         } catch (err) { console.log(err); }
     }
 
@@ -49,17 +47,6 @@ const UserSignin = () => {
 
     return (
         <>
-            {/* <header>
-                <div className="wrap header--flex">
-                    <h1 className="header--logo"><a href="index.html">Courses</a></h1>
-                    <nav>
-                        <ul className="header--signedout">
-                            <li><a href="signup.html">Sign Up</a></li>
-                            <li><a href="signin.html">Sign In</a></li>
-                        </ul>
-                    </nav>
-                </div>
-            </header> */}
             <main>
                 <div className="form--centered">
                     <h2>Sign In</h2>
@@ -71,7 +58,7 @@ const UserSignin = () => {
                             name="emailAddress" 
                             type="email" 
                             defaultValue=""
-                            ref={username} />
+                            ref={emailAddress} />
                         <label htmlFor="password">Password</label>
                         <input 
                             id="password"

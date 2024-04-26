@@ -27,7 +27,15 @@ $ npm audit fix
     - `GET`, to `api/courses`
 - [x] Add CORS support
 
-## Notes
+## Raw Notes
+
+   ### `Context API` Jargon
+   - "manage global state using the React Context API"
+   - "define 'global resources' using a Context-API-<Provider>-component available for use by
+   - Context-API-<Consumer> components
+
+   ### HOC Jargon
+   - Use a stateless component
 
 ### `20240408`
 - "Works":
@@ -328,3 +336,87 @@ Is there any other option that I might be able to take given the fact that I can
             : null
     );
 ```
+
+   ### PrivateRoute.js
+   This is the first one to actually get to `<Outlet>`
+   ```javascript
+   /////
+   //  client\src\components\PrivateRoute.js
+   /////
+   import { useState, useContext, useEffect } from "react";
+   import UserContext from "../contexts/UserContext";
+   import { Navigate, Outlet, useLocation } from "react-router-dom";
+
+   import { getPassword } from "../utils/cryptoUtils";
+
+   const PrivateRoute = () => {
+      const { authData, actions } = useContext(UserContext);
+      const location = useLocation();
+      const [authenticated, setAuthenticated] = useState(null);
+
+      useEffect(() => {
+         if (authenticated === null) {
+               (async () => {
+                  console.log("authData: ", authData);
+                  console.log("email: ", authData.user.emailAddress);
+                  const pass = await getPassword();
+                  console.log("pass: ", pass);
+
+                  const user = await actions.signIn(authData.user.emailAddress, pass);
+                  console.log("user - signin return: ", user);
+                  if(user) setAuthenticated(true);
+                  else setAuthenticated(false);
+               })();
+         }
+         // [!TRY] eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [authData, actions, authenticated]); // Infinite Loop = [authData, actions] || [authData]
+
+      console.log("authenticated: ", authenticated);
+      if (authenticated === true) return <Outlet />
+      if (authenticated === false) return <Navigate replace to='signin' state={{ from: location.pathname }} />
+      return <p>Loading...</p>
+   }
+
+   export default PrivateRoute;
+   ```
+
+   ```javascript
+   /////
+   //  client\src\components\PrivateRoute.js
+   /////
+   import { useState, useContext, useEffect } from "react";
+   import UserContext from "../contexts/UserContext";
+   import { Navigate, Outlet, useLocation } from "react-router-dom";
+
+   import { getPassword } from "../utils/cryptoUtils";
+
+   const PrivateRoute = () => {
+      const { authData, actions } = useContext(UserContext);
+      const location = useLocation();
+      const [authenticated, setAuthenticated] = useState(null);
+
+      useEffect(() => {
+         if (authenticated === null) {
+               (async () => {
+                  console.log("authData: ", authData);
+                  console.log("email: ", authData.user.emailAddress);
+                  const pass = await getPassword();
+                  console.log("pass: ", pass);
+
+                  const user = await actions.signIn(authData.user.emailAddress, pass);
+                  console.log("user - signin return: ", user);
+                  if(user) setAuthenticated(true);
+                  else setAuthenticated(false);
+               })();
+         }
+         // [!TRY] eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [authenticated]); // Infinite Loop = [authData, actions] || [authData]
+
+      console.log("authenticated: ", authenticated);
+      if (authenticated === true) return <Outlet />
+      if (authenticated === false) return <Navigate replace to='signin' state={{ from: location.pathname }} />
+      return <p>Loading...</p>
+   }
+
+   export default PrivateRoute;
+   ```
