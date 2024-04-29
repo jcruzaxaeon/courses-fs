@@ -4,6 +4,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import UserContext from "../contexts/UserContext.js";
+import ReactMarkdown from 'react-markdown';
 
 import { iTry } from '../utils/i-try.js';
 import { getPassword } from '../utils/cryptoUtils.js';
@@ -91,8 +92,8 @@ const CourseDetail = () => {
     if (details) {
         const firstName = details.student.firstName;
         const lastName = details.student.lastName;
-        let materialsNeeded = ['* No materials needed for this course.'];
-        let estimatedTime = 'No estimate available.';
+        let materialsNeeded = '* No materials needed for this course.'; //V1 - ['* No materials ...']
+        let estimatedTime = 'No time estimate available.';
         const courseOwner = details.userId;
         let currentUserId = null;
         let writePermission = false;
@@ -134,7 +135,7 @@ const CourseDetail = () => {
                                     <h3 className="course--detail--title">Course</h3>
                                     <h4 className="course--name">{details.title}</h4>
                                     <p>By {firstName} {lastName}</p>
-                                    <p>{details.description}</p>
+                                    <ReactMarkdown>{details.description}</ReactMarkdown>
                                 </div>
                                 <div>
                                     <h3 className="course--detail--title">Estimated Time</h3>
@@ -142,7 +143,7 @@ const CourseDetail = () => {
 
                                     <h3 className="course--detail--title">Materials Needed</h3>
                                     <ul className="course--detail--list">
-                                        <p>{materialsNeeded}</p>
+                                        <ReactMarkdown>{materialsNeeded}</ReactMarkdown>
                                         {/**********************************************************
                                         **  MATERIALS LIST 
                                         **********************************************************/}

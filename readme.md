@@ -5,11 +5,14 @@
 ## Action Roster
 
 ## Devlog
+- [ ] `add generalized error pattern`
+- [ ] `add markdown support`
+- [x] `prime UpdateCourse; display errs from REST API;`
 - [x] UpdateCourse. Handle form submit.
 - [x] `display validation errors returned from REST API for:
     - [x] UserSignUp
     - [x] CreateCourse
-    - [ ] UpdateCourse
+    - [x] UpdateCourse
 - [x] `rough UpdateCourse component`
 - [x] `rough CreateCourse component`
 - `add ErrorList, cookies`
