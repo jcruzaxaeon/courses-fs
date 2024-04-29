@@ -32,7 +32,6 @@ const CreateCourse = () => {
             userId: authData.user.id,
          }
 
-         console.log('In Try-Catch: ', course);
          const endpoint = `courses`;
          const url = `http://localhost:5000/api/${endpoint}`;
          const options = {
@@ -45,8 +44,6 @@ const CreateCourse = () => {
 
          const pass = await getPassword();
          const encodedCredentials = btoa(`${authData.user.emailAddress}:${pass}`);
-         console.log("Unendcoded Credentials: ", `${authData.user.emailAddress}:${pass}`);
-         console.log("Encoded Credentials: ", encodedCredentials);
          options.headers.Authorization = `Basic ${encodedCredentials}`;
 
          const response = await fetch(url, options);
@@ -62,6 +59,7 @@ const CreateCourse = () => {
             setErrors(data.errors);
             return;
          }
+         // [!TODO] Create generalized status=500 error pattern
          throw new Error();
 
       } catch (err) { console.log(err) }

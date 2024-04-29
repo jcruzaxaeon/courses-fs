@@ -7,7 +7,9 @@ import UserContext from "../contexts/UserContext.js";
 
 import { iTry } from '../utils/i-try.js';
 import { getPassword } from '../utils/cryptoUtils.js';
+import ErrorList from './ErrorList.js';
 // import CourseContext from "../contexts/CourseContext.js";
+
 
 const CourseDetail = () => {
     const { authData, actions /*authUser, pass*/ } = useContext(UserContext);
@@ -16,6 +18,8 @@ const CourseDetail = () => {
     // console.log(id);
     const [details, setDetails] = useState(null);
     const [authenticated, setAuthenticated] = useState(null);
+    const [errors, setErrors] = useState([]);
+
     const nav = useNavigate();
 
     useEffect(() => {
@@ -30,6 +34,7 @@ const CourseDetail = () => {
 
             const response = await fetch(url, options);
             const data = await response.json();
+            if (!data) setErrors([`Course ${id} does not exist.`]);
             setDetails(data);
         }, 'message');
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -86,16 +91,18 @@ const CourseDetail = () => {
     if (details) {
         const firstName = details.student.firstName;
         const lastName = details.student.lastName;
-        const courseOwner = details.userId;
-        const currentUserId = authData.user.id;
-        const writePermission = courseOwner === currentUserId;
         let materialsNeeded = ['* No materials needed for this course.'];
         let estimatedTime = 'No estimate available.';
+        const courseOwner = details.userId;
+        let currentUserId = null;
+        let writePermission = false;
+        if (authenticated) {
+            currentUserId = authData.user.id;
+            writePermission = courseOwner === currentUserId;
+        }
 
         if (details.materialsNeeded) materialsNeeded = details.materialsNeeded;
         if (details.estimatedTime) estimatedTime = details.estimatedTime;
-        console.log("Details: ", details);
-        console.log("authData.user: ", authData.user);
 
         return (
             <>
@@ -161,7 +168,25 @@ const CourseDetail = () => {
             </>
         );
     }
-    return <><p>Loading...</p></>
+    if (errors.length > 0) {
+        return <>
+            <main>
+                <div className="actions--bar">
+                    <div className="wrap">
+                        <Link
+                            className="button button-secondary"
+                            to='/'>Return to List</Link>
+                    </div>
+                </div>
+
+                <div className="wrap">
+                    <h2>Course Detail</h2>
+                    <ErrorList errors={errors} />
+                </div>
+            </main>
+        </>
+    }
+    return <p>Loading...</p>
 }
 
 export default CourseDetail;

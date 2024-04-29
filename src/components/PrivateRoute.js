@@ -29,7 +29,7 @@ const PrivateRoute = () => {
                 // }, 5000);
             })();
         }
-        // [!TRY] eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [authenticated]); // Infinite Loop = [authData, actions] || [authData]
 
     console.log("authenticated: ", authenticated);

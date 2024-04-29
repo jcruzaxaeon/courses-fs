@@ -5,7 +5,12 @@
 ## Action Roster
 
 ## Devlog
-- [ ] `rough UpdateCourse component`
+- [x] UpdateCourse. Handle form submit.
+- [x] `display validation errors returned from REST API for:
+    - [x] UserSignUp
+    - [x] CreateCourse
+    - [ ] UpdateCourse
+- [x] `rough UpdateCourse component`
 - [x] `rough CreateCourse component`
 - `add ErrorList, cookies`
     - [x] add cookies to UserContext
@@ -13,6 +18,12 @@
 - `rough UserContext, UserSignIn-component`:
 - `rough CourseDetail component`:
 - `test client-api wiring with Test.js`
+
+    ### TODO
+    - [ ] Create generalized error catcher / error system (status=500) error pattern
+        - [ ] UserSignUp
+        - [ ] CreateCourse
+        - [ ] UpdateCourse
 
 ### `Apr 9, 2024`
 

@@ -31,9 +31,9 @@ export async function getPassword() {
     const authData = authDataString ? JSON.parse(authDataString) : null;
 
     if (authData) {
-        const keyHex = process.env.REACT_APP_KEY_HEX;
+        const secretKeyHex = process.env.REACT_APP_SECRET_KEY_HEX;
         const secretKeyUint8 = new Uint8Array(
-            keyHex.match(/.{2}/g)
+            secretKeyHex.match(/.{2}/g)
                 .map(byte => parseInt(byte, 16))
         );
         let key = await window.crypto.subtle.importKey(

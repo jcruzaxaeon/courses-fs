@@ -23,7 +23,7 @@ const UserSignUp = () => {
       e.preventDefault();
 
       try {
-         // [!REV] Check variable-name compatibility
+         // [!REVIEW] Check variable-name compatibility
          const user = {
             firstName: rFirstName.current.value,
             lastName: rLastName.current.value,
@@ -58,11 +58,11 @@ const UserSignUp = () => {
 
          if (response.status === 400) {
             const data = await response.json();
-            console.log(data.errors);
             setErrors(data.errors);
             return;
          }
 
+         // [!TODO] Create generalized status=500 error pattern
          throw new Error();
 
       } catch (err) { console.log(err); }

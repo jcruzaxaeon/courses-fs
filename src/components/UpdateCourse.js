@@ -1,12 +1,13 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //  client\src\components\UpdateCourse.js
 /////////////////////////////////////////////////////////////////////////////////////////////////
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 
 import UserContext from "../contexts/UserContext.js";
-// import CourseContext from "../contexts/CourseContext";
+import ErrorList from "./ErrorList.js";
 import { iTry } from "../utils/i-try.js";
+import { getPassword } from "../utils/cryptoUtils.js";
 
 const UpdateCourse = () => {
     const { id } = useParams();
@@ -14,10 +15,17 @@ const UpdateCourse = () => {
     const { authData } = useContext(UserContext);
     const [course, setCourse] = useState(null);
     let [fn, ln, courses] = [null, null, null];
+    const [errors, setErrors] = useState([]);
+
+    // Course Data
+    const title = useRef(null);
+    const description = useRef(null);
+    const estimatedTime = useRef(null);
+    const materialsNeeded = useRef(null);
 
     useEffect(() => {
         iTry(async () => {
-            const endpoint = 'courses';
+            const endpoint = `courses/${id}`;
             const method = 'GET';
             const url = `http://localhost:5000/api/${endpoint}`;
             const options = {
@@ -26,21 +34,27 @@ const UpdateCourse = () => {
             };
 
             const response = await fetch(url, options);
-            courses = await response.json();
-            console.log("Courses: ", courses)
-            if (courses) {
-                iTry(() => {
-                    const i = courses.findIndex(c => +c.id === +id);
-                    setCourse(courses[i]);
-                }, `Course "${id}" not found.`);
-                // try {
-                //     const i = courses.findIndex(c => +c.id === +id);
-                //     setCourse(courses[i]);
 
-                // } catch (err) {
-                //     throw new Error(`Course "${id}" not found.`);
-                // }
-            }
+            const data = await response.json();
+            setCourse(data);
+
+            if (!data) { setErrors([`Course ${id} not found.`]); return; }
+            console.log("Course: ", data);
+            // if (courses) {
+            //     iTry(() => {
+            //         const i = courses.findIndex(c => +c.id === +id);
+            //         setCourse(courses[i]);
+            //     }, `Course "${id}" not found.`);
+            //     // try {
+            //     //     const i = courses.findIndex(c => +c.id === +id);
+            //     //     setCourse(courses[i]);
+
+            //     // } catch (err) {
+            //     //     throw new Error(`Course "${id}" not found.`);
+            //     // }
+            // }
+            // const data = response.json();
+
         }, 'Async-error in UpdateCourse.');
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -48,14 +62,57 @@ const UpdateCourse = () => {
     const handleSubmit = e => {
         e.preventDefault();
 
-        try {
+        iTry(async () => {
+            const newCourse = {
+                title: title.current.value,
+                description: description.current.value,
+                estimatedTime: estimatedTime.current.value,
+                materialsNeeded: materialsNeeded.current.value,
+                userId: authData.user.id,
+            }
 
-        } catch (err) { console.log(err) }
+            const endpoint = `courses/${id}`;
+            // const method = 'PUT';
+            const url = `http://localhost:5000/api/${endpoint}`;
+            console.log("New Course: ", newCourse);
+            const options = {
+                method: 'PUT',
+                body: JSON.stringify(newCourse),
+                headers: {
+                    'Content-type': 'application/json; charset=utf-8',
+                 },
+            };
+
+            const pass = await getPassword();
+            const encodedCredentials = btoa(`${authData.user.emailAddress}:${pass}`);
+            options.headers.Authorization = `Basic ${encodedCredentials}`;
+
+            const response = await fetch(url, options);
+
+            if (response.status === 204) {
+                console.log(response);
+                nav(`/courses/${id}`);
+                return;
+             }
+             if (response.status === 400) {
+                const data = await response.json();
+                setErrors(data.errors);
+                return;
+             }
+             // [!TODO] Create generalized status=500 error pattern
+             throw new Error();
+
+        }, 'Submit Issue');
     }
 
     const handleCancel = e => {
         e.preventDefault();
         nav(`/courses/${id}`);
+    }
+
+    const handleReturn = e => {
+        e.preventDefault();
+        nav(`/`);
     }
 
     if (course) {
@@ -68,43 +125,57 @@ const UpdateCourse = () => {
     console.log('authData: ', authData);
     console.log('Course: ', course);
     if (authData && course) {
-        console.log("inside");
+        console.log("inside", errors);
         return (
             <main>
                 <div className="wrap">
                     <h2>Update Course</h2>
+                    <ErrorList errors={errors} />
                     <form onSubmit={handleSubmit}>
                         <div className="main--flex">
                             <div>
                                 <label htmlFor="courseTitle">Course Title</label>
                                 <input
+                                    ref={title}
                                     id="courseTitle"
                                     name="courseTitle"
                                     type="text"
-                                    defaultValue={course.title} />
+                                    defaultValue=
+                                    {errors.length === 0
+                                        ? course.title
+                                        : null} />
 
                                 <p>By {fn} {ln}</p>
 
                                 <label htmlFor="courseDescription">Course Description</label>
                                 <textarea
+                                    ref={description}
                                     id="courseDescription"
                                     name="courseDescription"
-                                    defaultValue={course.description} />
+                                    defaultValue={errors.length === 0
+                                        ? course.description
+                                        : null} />
                                 {/* </textarea> */}
                             </div>
                             <div>
                                 <label htmlFor="estimatedTime">Estimated Time</label>
                                 <input
+                                    ref={estimatedTime}
                                     id="estimatedTime"
                                     name="estimatedTime"
                                     type="text"
-                                    defaultValue={course.estimatedTime} />
+                                    defaultValue={errors.length === 0
+                                        ? course.estimatedTime
+                                        : null} />
 
                                 <label htmlFor="materialsNeeded">Materials Needed</label>
                                 <textarea
+                                    ref={materialsNeeded}
                                     id="materialsNeeded"
                                     name="materialsNeeded"
-                                    defaultValue={course.materialsNeeded} />
+                                    defaultValue={errors.length === 0
+                                        ? course.materialsNeeded
+                                        : null} />
                                 {/* </textarea> */}
                             </div>
                         </div>
@@ -116,12 +187,13 @@ const UpdateCourse = () => {
             </main>
         );
     }
-    console.log("loading");
-    return (
-        <>
-            <p>Loading...</p>
-        </>
-    )
+    return <main>
+        <div className="wrap">
+            <h2>Update Course</h2>
+            <ErrorList errors={errors} />
+            <button className="button button-secondary" onClick={handleReturn}>Return to List</button>
+        </div>
+    </main>
 }
 
 export default UpdateCourse;
