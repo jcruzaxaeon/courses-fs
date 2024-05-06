@@ -12,6 +12,7 @@ const Nav = () => {
     const { authData } = useContext(UserContext);
     // console.log(authData);
     let name = 'noname';
+    //[!TODO] Update to remove on cookie
     if (authData) name = `${authData.user.firstName} ${authData.user.lastName}`;
     //console.log(authData);
 

@@ -4,6 +4,8 @@ import { BrowserRouter } from 'react-router-dom';
 
 import { CourseProvider } from './contexts/CourseContext.js';
 import { UserProvider } from './contexts/UserContext.js';
+import { ErrorMessageProvider } from './contexts/ErrorMessageContext.js';
+
 import './index.css';
 import App from './App.js';
 import reportWebVitals from './reportWebVitals.js';
@@ -15,11 +17,13 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
    <React.StrictMode>
       <BrowserRouter>
-         <UserProvider>
-            <CourseProvider>
-               <App />
-            </CourseProvider>
-         </UserProvider>
+         <ErrorMessageProvider>
+            <UserProvider>
+               <CourseProvider>
+                  <App />
+               </CourseProvider>
+            </UserProvider>
+         </ErrorMessageProvider>
       </BrowserRouter>
    </React.StrictMode>
 );

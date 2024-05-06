@@ -3,29 +3,65 @@
 //  - Main / Landing page
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 import { useState, useEffect, useContext } from "react";
-import { Link } from 'react-router-dom';
-import { iTry } from "../utils/i-try.js";
+import { Link, useNavigate } from 'react-router-dom';
+// import { iTry } from "../utils/i-try.js";
 import UserContext from "../contexts/UserContext.js";
+import ErrorMessageContext from "../contexts/ErrorMessageContext.js";
 
 const Courses = () => {
    const { fetchCourses } = useContext(UserContext);
+   const { addErrorMessage } = useContext(ErrorMessageContext);
    const [courses, setCourses] = useState(null);
+   const nav = useNavigate();
 
    useEffect(() => {
-      iTry(async () => {
-         const endpoint = 'courses';
-         const method = 'GET';
-         const url = `http://localhost:5000/api/${endpoint}`;
-         const options = {
-            method,
-            headers: {},
-         };
+      (async () => {
+         let msg = '';
 
-         const response = await fetch(url, options);
-         // const data = await response.json();
-         setCourses(await response.json());
-      }, 'Courses not found.');
-      // Xeslint-disable-next-line react-hooks/exhaustive-deps
+         try {
+            const endpoint = 'courses';
+            // const endpoint = 'error';
+            const method = 'GET';
+            const url = `http://localhost:5000/api/${endpoint}`;
+            const options = {
+               method,
+               headers: {},
+            };
+
+            const res = await fetch(url, options);
+            // const data = await res.json();
+            if (!res.ok) {
+               msg = `HTTP Status Code: ${res.status}`;
+               // nav('/error', { state: { errors: [msg] } });
+               addErrorMessage(msg);
+               nav('/error');
+               return;
+           }
+            setCourses(await res.json());
+         } catch (err) {
+            msg = `Error Code: Co-UE-01`;
+            console.log(err);
+            // nav('/error',
+            //    { state: { errors: [`Error Code: Co-UE-01`] } });
+            addErrorMessage(msg);
+            nav('/error');
+         }
+
+         // iTry(async () => {
+         //    const endpoint = 'courses';
+         //    const method = 'GET';
+         //    const url = `http://localhost:5000/api/${endpoint}`;
+         //    const options = {
+         //       method,
+         //       headers: {},
+         //    };
+
+         //    const response = await fetch(url, options);
+         //    // const data = await response.json();
+         //    setCourses(await response.json());
+         // }, 'Courses not found.');
+      })();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [fetchCourses]);
 
    if (courses) {
@@ -57,7 +93,7 @@ const Courses = () => {
          </div>
       );
    }
-   return <p>Loading...</p>;
+   return <div className="wrap"><p>Loading...</p></div>;
 }
 
 export default Courses;

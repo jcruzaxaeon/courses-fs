@@ -48,24 +48,28 @@ const UserSignUp = () => {
          //    options.headers.Authorization = `Basic ${encodedCredentials}`;
          // }
 
-         const response = await fetch(url, options);
+         const res = await fetch(url, options);
 
-         if (response.status === 201) {
+         if (res.status === 201) {
             await actions.signIn(user.emailAddress, user.password);
             nav('/');
             return;
          }
-
-         if (response.status === 400) {
-            const data = await response.json();
+         if (res.status === 400) {
+            const data = await res.json();
             setErrors(data.errors);
             return;
          }
-
-         // [!TODO] Create generalized status=500 error pattern
-         throw new Error();
-
-      } catch (err) { console.log(err); }
+         if(!res.ok) {
+            addErrorMessage(`HTTP Status Code: ${res.status}`);
+            nav('/error');
+            return;
+        }
+      } catch (err) { 
+         console.log(err);
+         addErrorMessage(`Error Code: USU-hS-01`);
+         nav('/error');
+      }
    }
 
    const handleCancel = e => {

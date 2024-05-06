@@ -5,6 +5,7 @@ import { useState, useEffect, useRef, useContext } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 
 import UserContext from "../contexts/UserContext.js";
+import ErrorMessageContext from "../contexts/ErrorMessageContext.js";
 import ErrorList from "./ErrorList.js";
 import { iTry } from "../utils/i-try.js";
 import { getPassword } from "../utils/cryptoUtils.js";
@@ -13,8 +14,12 @@ const UpdateCourse = () => {
     const { id } = useParams();
     const nav = useNavigate();
     const { authData } = useContext(UserContext);
+    const { addErrorMessage } = useContext(ErrorMessageContext);
+    const [loading, setLoading] = useState(null);
     const [course, setCourse] = useState(null);
-    let [fn, ln, courses] = [null, null, null];
+    const [fn, setFn] = useState(null);
+    const [ln, setLn] = useState(null);
+    // let [fn, ln] = [null, null];
     const [errors, setErrors] = useState([]);
 
     // Course Data
@@ -23,86 +28,114 @@ const UpdateCourse = () => {
     const estimatedTime = useRef(null);
     const materialsNeeded = useRef(null);
 
+    // Try to find Course
     useEffect(() => {
-        iTry(async () => {
-            const endpoint = `courses/${id}`;
-            const method = 'GET';
-            const url = `http://localhost:5000/api/${endpoint}`;
-            const options = {
-                method,
-                headers: {},
-            };
+        (async () => {
+            try {
+                const endpoint = `courses/${id}`;
+                const method = 'GET';
+                const url = `http://localhost:5000/api/${endpoint}`;
+                const options = {
+                    method,
+                    headers: {},
+                };
 
-            const response = await fetch(url, options);
+                const res = await fetch(url, options);
+                if(!res.ok) {
+                    addErrorMessage(`HTTP Status Code: ${res.status}`);
+                    nav('/error');
+                    return;
+                }
 
-            const data = await response.json();
-            setCourse(data);
+                const data = await res.json();
+                if (!data) {
+                    addErrorMessage(`Course ${id} does not exist.`);
+                    nav('/notfound');
+                    // nav('/notfound',
+                    //     { state: { errors: [`Course ${id} does not exist.`] }, },);
+                    return;
+                }
 
-            if (!data) { setErrors([`Course ${id} not found.`]); return; }
-            console.log("Course: ", data);
-            // if (courses) {
-            //     iTry(() => {
-            //         const i = courses.findIndex(c => +c.id === +id);
-            //         setCourse(courses[i]);
-            //     }, `Course "${id}" not found.`);
-            //     // try {
-            //     //     const i = courses.findIndex(c => +c.id === +id);
-            //     //     setCourse(courses[i]);
+                const writePermission = authData.user.id === data.userId;
+                if (!writePermission) {
+                    addErrorMessage(`Course is owned by a different user.`);
+                    nav('/forbidden');
+                    // nav('/forbidden',
+                    // { state: { errors: [`Course is owned by a different user.`] }, },);
+                    return;
+                }
 
-            //     // } catch (err) {
-            //     //     throw new Error(`Course "${id}" not found.`);
-            //     // }
-            // }
-            // const data = response.json();
-
-        }, 'Async-error in UpdateCourse.');
+                setCourse(data);
+                setLoading(false);
+                setFn(data.student.firstName);
+                setLn(data.student.lastName);
+            } catch (err) {
+                console.log(err);
+                addErrorMessage(`Error Code: UpCo-uE-01`);
+                nav('/error');
+            }
+        })();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleSubmit = e => {
         e.preventDefault();
 
-        iTry(async () => {
-            const newCourse = {
-                title: title.current.value,
-                description: description.current.value,
-                estimatedTime: estimatedTime.current.value,
-                materialsNeeded: materialsNeeded.current.value,
-                userId: authData.user.id,
+        (async () => {
+            try {
+                const newCourse = {
+                    title: title.current.value,
+                    description: description.current.value,
+                    estimatedTime: estimatedTime.current.value,
+                    materialsNeeded: materialsNeeded.current.value,
+                    userId: authData.user.id,
+                }
+
+                const endpoint = `courses/${id}`;
+                const url = `http://localhost:5000/api/${endpoint}`;
+                console.log("New Course: ", newCourse);
+                const options = {
+                    method: 'PUT',
+                    body: JSON.stringify(newCourse),
+                    headers: {
+                        'Content-type': 'application/json; charset=utf-8',
+                    },
+                };
+
+                const pass = await getPassword();
+                const encodedCredentials = btoa(`${authData.user.emailAddress}:${pass}`);
+                options.headers.Authorization = `Basic ${encodedCredentials}`;
+
+                // HTTP:500 Test
+                // console.log("Start Test")
+                // const url = `http://localhost:5000/api/error`;
+                // const options = {
+                //     method: 'GET',
+                //     headers: {},
+                // }
+
+                const res = await fetch(url, options);
+
+                if (res.status === 204) {
+                    nav(`/courses/${id}`);
+                    return;
+                }
+                if (res.status === 400) {
+                    const data = await res.json();
+                    setErrors(data.errors);
+                    return;
+                }
+                if(!res.ok) {
+                    addErrorMessage(`HTTP Status Code: ${res.status}`);
+                    nav('/error');
+                    return;
+                }
+            } catch (err) {
+                console.log(err);
+                addErrorMessage(`Error Code: UpCo-hS-01`);
+                nav('/error');
             }
-
-            const endpoint = `courses/${id}`;
-            // const method = 'PUT';
-            const url = `http://localhost:5000/api/${endpoint}`;
-            console.log("New Course: ", newCourse);
-            const options = {
-                method: 'PUT',
-                body: JSON.stringify(newCourse),
-                headers: {
-                    'Content-type': 'application/json; charset=utf-8',
-                 },
-            };
-
-            const pass = await getPassword();
-            const encodedCredentials = btoa(`${authData.user.emailAddress}:${pass}`);
-            options.headers.Authorization = `Basic ${encodedCredentials}`;
-
-            const response = await fetch(url, options);
-
-            if (response.status === 204) {
-                console.log(response);
-                nav(`/courses/${id}`);
-                return;
-             }
-             if (response.status === 400) {
-                const data = await response.json();
-                setErrors(data.errors);
-                return;
-             }
-             // [!TODO] Create generalized status=500 error pattern
-             throw new Error();
-
-        }, 'Submit Issue');
+        })();
     }
 
     const handleCancel = e => {
@@ -110,22 +143,31 @@ const UpdateCourse = () => {
         nav(`/courses/${id}`);
     }
 
-    const handleReturn = e => {
-        e.preventDefault();
-        nav(`/`);
-    }
+    // const handleReturn = e => {
+    //     e.preventDefault();
+    //     nav(`/`);
+    // }
 
-    if (course) {
-        fn = course.student.firstName;
-        ln = course.student.lastName;
-        console.log("if(courses) course: ", course);
-        console.log('courseMaterials: ', course.materialsNeeded);
-    }
+    // if (course) {
+    //     // console.log("authData: ", authData);
+    //     // console.log("if(courses) course: ", course);
+    //     const writePermission = authData.user.id === course.userId;
+    //     if (!writePermission) {
+    //         addErrorMessage(`Course is owned by a different user.`);
+    //         nav('/forbidden');
+    //         // nav('/forbidden',
+    //         // { state: { errors: [`Course is owned by a different user.`] }, },);
+    //         return;
+    //     }
 
-    console.log('authData: ', authData);
-    console.log('Course: ', course);
-    if (authData && course) {
-        console.log("inside", errors);
+    //     fn = course.student.firstName;
+    //     ln = course.student.lastName;
+    // }
+
+    // setTimeout(() => { console.log('wait') }, 5000);
+
+    if (authData && course && !loading) {
+        // console.log("inside", errors);
         return (
             <main>
                 <div className="wrap">
@@ -187,13 +229,7 @@ const UpdateCourse = () => {
             </main>
         );
     }
-    return <main>
-        <div className="wrap">
-            <h2>Update Course</h2>
-            <ErrorList errors={errors} />
-            <button className="button button-secondary" onClick={handleReturn}>Return to List</button>
-        </div>
-    </main>
+    return <main><div className="wrap"><p>Loading ...</p></div></main>
 }
 
 export default UpdateCourse;

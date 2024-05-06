@@ -1,11 +1,14 @@
 .App {
-  text-align: center;
+  text-align: left; /*V1: 'center'*/
 }
 
 .App-logo {
   height: 40vmin;
   pointer-events: none;
 }
+
+/*V1: eliminate webpack dev-server error-overlay */
+/* #webpack-dev-server-client-overlay { display: none !important; } */
 
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {

@@ -1,9 +1,13 @@
-/////////////////////////////////////////////////////////////////////////////////////////////////
 //  client\src\utils\i-try.js
-/////////////////////////////////////////////////////////////////////////////////////////////////
-exports.iTry = (cb, msg) => {
-    return (() => {
-       try { cb(); }
-       catch (err) { throw new Error(msg); }
-    })();
- }
+//
+// import { useNavigate } from "react-router-dom";
+
+exports.iTry = (cb, msg, nav) => {
+   return (() => {
+      try { cb(); }
+      // catch (err) { throw new Error(msg); }
+      catch {
+         nav('/error', {state: { errors: [msg]}})
+      }
+   })();
+}

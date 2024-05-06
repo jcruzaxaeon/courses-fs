@@ -26,10 +26,8 @@ const UserSignin = () => {
         const rEmailAddress = emailAddress.current.value;
         const rPassword = password.current.value;
 
-
         try {
             const user = await actions.signIn(rEmailAddress, rPassword);
-            console.log('"user" post signin: ', user);
             if (user) {
                 // nav('/');
                 nav(from);

@@ -5,8 +5,10 @@
 ## Action Roster
 
 ## Devlog
-- [ ] `add generalized error pattern`
-- [ ] `add markdown support`
+- [x] `add generalized error pattern`
+    - [x] `add NotFound`
+    - [x] `add Forbidden`
+- [x] `add markdown support`
 - [x] `prime UpdateCourse; display errs from REST API;`
 - [x] UpdateCourse. Handle form submit.
 - [x] `display validation errors returned from REST API for:
@@ -434,3 +436,21 @@ Is there any other option that I might be able to take given the fact that I can
 
    export default PrivateRoute;
    ```
+
+module.exports = {
+  devServer: function (configFunction) {
+    return function (proxy, allowedHost) {
+      // Create the default config by calling configFunction with the proxy/allowedHost parameters
+      const config = configFunction(proxy, allowedHost);
+
+      config.client = {
+        overlay: false,
+      };
+
+      return config;
+    };
+  },
+};
+
+https://webpack.js.org/configuration/dev-server/
+npx webpack serve --client-overlay

@@ -5,12 +5,14 @@ import { useContext, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import UserContext from "../contexts/UserContext.js";
+import ErrorMessageContext from "../contexts/ErrorMessageContext.js";
 import ErrorList from "./ErrorList.js";
 
 import { getPassword } from '../utils/cryptoUtils.js';
 
 const CreateCourse = () => {
    const { authData } = useContext(UserContext);
+   const { addErrorMessage } = useContext(ErrorMessageContext);
    const nav = useNavigate();
 
    // LOCAL
@@ -46,23 +48,28 @@ const CreateCourse = () => {
          const encodedCredentials = btoa(`${authData.user.emailAddress}:${pass}`);
          options.headers.Authorization = `Basic ${encodedCredentials}`;
 
-         const response = await fetch(url, options);
+         const res = await fetch(url, options);
 
-         if (response.status === 201) {
-            console.log(response);
+         if (res.status === 201) {
             nav('/');
             return;
          }
-         if (response.status === 400) {
-            const data = await response.json();
-            console.log(data.errors);
+         // Populate <ErrorList /> for empty required-inputs
+         if (res.status === 400) {
+            const data = await res.json();
             setErrors(data.errors);
             return;
          }
-         // [!TODO] Create generalized status=500 error pattern
-         throw new Error();
-
-      } catch (err) { console.log(err) }
+         if (!res.ok) {
+            addErrorMessage(`HTTP Status Code: ${res.status}`);
+            nav('/error');
+            return;
+         }
+      } catch (err) {
+         console.log(err);
+         addErrorMessage(`Error Code: CC-hS-01`);
+         nav('/error');
+      }
    }
 
    const handleCancel = e => {
@@ -121,7 +128,7 @@ const CreateCourse = () => {
          </main>
       );
    }
-   return <><p>Loading...</p></>
+   return <div className="wrap"><p>Loading...</p></div>;
 }
 
 export default CreateCourse;

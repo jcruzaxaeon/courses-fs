@@ -35,7 +35,7 @@ const PrivateRoute = () => {
     console.log("authenticated: ", authenticated);
     if (authenticated === true) return <Outlet />;
     if (authenticated === false) return <Navigate replace to='signin' state={{ from: location.pathname }} />;
-    return <p>Loading...</p>
+    return <div className="wrap"><p>Loading...</p></div>;
 }
 
 export default PrivateRoute;

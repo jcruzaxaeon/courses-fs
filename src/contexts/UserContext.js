@@ -8,10 +8,11 @@
 //     - CourseDetail.js
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-import { useState, createContext } from "react";
+import { useState, createContext, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
 import { arrayBufferToBase64 } from "../utils/cryptoUtils";
+import ErrorMessageContext from "./ErrorMessageContext";
 
 const UserContext = createContext(null);
 
@@ -25,11 +26,11 @@ export const UserProvider = (props) => {
     );
     const [fetchCourses, setFetchCourses] = useState(false);
     const secretKeyHex = process.env.REACT_APP_SECRET_KEY_HEX;
-    // console.log("AuthData: ", authData);
+    const { addErrorMessage } = useContext(ErrorMessageContext);
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////
+
+    //
     //  SIGN IN
-    /////////////////////////////////////////////////////////////////////////////////////////////////
     const signIn = async (emailAddress, password) => {
         // Called By: 
         // 1. UserSignIn.js
@@ -42,96 +43,112 @@ export const UserProvider = (props) => {
         //    headers: { Authorization: `Basic ${encodedCredentials}` },
         // }
         //   const response = await api('/users', 'GET', null, credentials);
-        
+
         // [!TODO] Add the "from" pattern for login to return user to previous page vs landing page
 
-        const endpoint = `users`;
-        const method = 'GET';
-        const url = `http://localhost:5000/api/${endpoint}`;
-        const options = {
-            method,
-            headers: {},
-        };
+        try {
+            const endpoint = `users`;
+            const method = 'GET';
+            const url = `http://localhost:5000/api/${endpoint}`;
+            const options = {
+                method,
+                headers: {},
+            };
 
-        if (emailAddress && password) {
-            const encodedCredentials = btoa(`${emailAddress}:${password}`);
-            options.headers.Authorization = `Basic ${encodedCredentials}`;
-        }
+            console.log(emailAddress, password);
+            if (emailAddress && password) {
+                const encodedCredentials = btoa(`${emailAddress}:${password}`);
+                options.headers.Authorization = `Basic ${encodedCredentials}`;
+            }
 
-        const response = await fetch(url, options);
-        const data = await response.json();
-        // console.log("API URL: ", url, "DATA: ", data);
-        // setCourseDetail(data);
-        // Guard Clauses
-        if (response.status === 200) {
-            // console.log(data);
-            const user = data;
-            console.log(`SUCCESS! ${user.emailAddress} is now signed in!`);
 
-            // Encryption
-            const encoder = new TextEncoder();
-            // const decoder = new TextDecoder();
-            const secretKeyUint8 = new Uint8Array(
-                secretKeyHex.match(/.{2}/g)
-                    .map(byte => parseInt(byte, 16))
-            );
-            const iv = window.crypto.getRandomValues(new Uint8Array(16));
+            const res = await fetch(url, options);
+            // console.log("API URL: ", url, "DATA: ", data);
+            // setCourseDetail(data);
+            // Guard Clauses
+            if (res.status === 200) {
+                const data = await res.json();
+                // console.log(data);
+                const user = data;
+                console.log(`SUCCESS! ${user.emailAddress} is now signed in!`);
 
-            // console.log("Uint8 : ", secretKeyUint8);
-            // console.log("Pass: ", password);
+                // Encryption
+                const encoder = new TextEncoder();
+                // const decoder = new TextDecoder();
+                const secretKeyUint8 = new Uint8Array(
+                    secretKeyHex.match(/.{2}/g)
+                        .map(byte => parseInt(byte, 16))
+                );
+                const iv = window.crypto.getRandomValues(new Uint8Array(16));
 
-            let key = await window.crypto.subtle.importKey(
-                'raw',
-                secretKeyUint8,
-                { name: 'AES-GCM', length: 256 },
-                false,
-                ['encrypt', 'decrypt']
-            );
+                // console.log("Uint8 : ", secretKeyUint8);
+                // console.log("Pass: ", password);
 
-            let encodedPass = encoder.encode(`${password}`);
-            let cipherText = await window.crypto.subtle.encrypt(
-                { name: 'AES-GCM', iv: iv },
-                key,
-                encodedPass,
-            );
+                let key = await window.crypto.subtle.importKey(
+                    'raw',
+                    secretKeyUint8,
+                    { name: 'AES-GCM', length: 256 },
+                    false,
+                    ['encrypt', 'decrypt']
+                );
 
-            // console.log("Encoded Password: ", encodedPass);
-            // console.log("Cipher Text: ", cipherText);
+                let encodedPass = encoder.encode(`${password}`);
+                let cipherText = await window.crypto.subtle.encrypt(
+                    { name: 'AES-GCM', iv: iv },
+                    key,
+                    encodedPass,
+                );
 
-            // const decrypted = await window.crypto.subtle.decrypt(
-            //     { name: 'AES-GCM', iv: iv },
-            //     key,
-            //     cipherText,
+                // console.log("Encoded Password: ", encodedPass);
+                // console.log("Cipher Text: ", cipherText);
+
+                // const decrypted = await window.crypto.subtle.decrypt(
+                //     { name: 'AES-GCM', iv: iv },
+                //     key,
+                //     cipherText,
+                // );
+
+                // const plainPass = decoder.decode(decrypted);
+
+                const cipherTextBase64 = arrayBufferToBase64(cipherText);
+                const ivBase64 = arrayBufferToBase64(iv);
+
+                const authDataPackage = { user, ivBase64, cipherTextBase64 };
+
+                Cookies.set('authData', JSON.stringify(authDataPackage), { expires: 1/*day*/ });
+                setAuthData(authDataPackage);
+
+                return authDataPackage.user;
+                // nav('/authenticated');
+                // return;
+            }
+            if (res.status === 401) {
+                console.log('Access Denied');
+                // setErrors(['Access Denied']);
+                return null;
+            }
+            if(!res.ok) {
+                addErrorMessage(`HTTP Status Code: ${res.status}`);
+                nav('/error');
+                return;
+            }
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            // END signIn
+        } catch (err) {
+            console.log(err);
+            // nav('/error',
+            //     { state: { errors: ['1Network error occurred. Please try again later.', `${err}`] }, },
             // );
-
-            // const plainPass = decoder.decode(decrypted);
-
-            const cipherTextBase64 = arrayBufferToBase64(cipherText);
-            const ivBase64 = arrayBufferToBase64(iv);
-
-            const authDataPackage = { user, ivBase64, cipherTextBase64 };
-
-            Cookies.set('authData', JSON.stringify(authDataPackage), { expires: 1/*day*/ });
-            setAuthData(authDataPackage);
-
-            return authDataPackage.user;
-            // nav('/authenticated');
-            // return;
+            addErrorMessage(`Error Code (UsCo-sI-01). Network error (${err}).`);
+            nav('/error');
         }
-        if (response.status === 401) {
-            console.log('Access Denied');
-            // setErrors(['Access Denied']);
-            return null;
-        }
-        throw new Error();
-        ////////////////////////////////////////////////////////////////////////////////////////////
-        // END signIn
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //  SIGN OUT
     ////////////////////////////////////////////////////////////////////////////////////////////////
     const signOut = () => {
+        //[!TODO] Reset welcom message state in top-banner
         setAuthData(null);
         // setPass(null);
         Cookies.remove('authData');

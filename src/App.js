@@ -12,6 +12,9 @@ import UserSignUp from './components/UserSignUp.js';
 import CreateCourse from './components/CreateCourse.js';
 import UpdateCourse from './components/UpdateCourse.js';
 import PrivateRoute from './components/PrivateRoute.js';
+import NotFound from './components/NotFound.js';
+import Forbidden from './components/Forbidden.js';
+import Error from './components/Error.js';
 
 function App() {
    return (
@@ -26,6 +29,10 @@ function App() {
             <Route path='/signin' element={<UserSignin />} /> {/* GET  /api/users */}
             <Route path='/signup' element={<UserSignUp />} /> {/* POST /api/users */}
             <Route path='/signout' element={<UserSignOut />} />
+            <Route path='/notfound' element={<NotFound />} />
+            <Route path='/forbidden' element={<Forbidden />} />
+            <Route path='/error' element={<Error />} />
+            <Route path='*' element={<NotFound />} />
          </Routes>
       </div>
    );

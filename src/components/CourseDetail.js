@@ -1,63 +1,118 @@
-/////////////////////////////////////////////////////////////////////////////////////////////////////
 //  src\components\CourseDetail.js
-////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//
 import { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import UserContext from "../contexts/UserContext.js";
+import ErrorMessageContext from '../contexts/ErrorMessageContext.js';
 import ReactMarkdown from 'react-markdown';
 
-import { iTry } from '../utils/i-try.js';
+// import { iTry } from '../utils/i-try.js';
 import { getPassword } from '../utils/cryptoUtils.js';
-import ErrorList from './ErrorList.js';
+// import ErrorList from './ErrorList.js';
 // import CourseContext from "../contexts/CourseContext.js";
 
 
 const CourseDetail = () => {
     const { authData, actions /*authUser, pass*/ } = useContext(UserContext);
+    const { addErrorMessage } = useContext(ErrorMessageContext);
     const { id } = useParams();
     // const { courseDetail, setCourseDetail } = useContext(CourseContext); // <<< Error occurs here
     // console.log(id);
     const [details, setDetails] = useState(null);
     const [authenticated, setAuthenticated] = useState(null);
-    const [errors, setErrors] = useState([]);
+    // const [errors, setErrors] = useState(null);
+
 
     const nav = useNavigate();
 
     useEffect(() => {
-        iTry(async () => {
-            const endpoint = `courses/${id}`;
-            const method = 'GET';
-            const url = `http://localhost:5000/api/${endpoint}`;
-            const options = {
-                method,
-                headers: {},
-            };
+        (async () => {
+            let msg = '';
 
-            const response = await fetch(url, options);
-            const data = await response.json();
-            if (!data) setErrors([`Course ${id} does not exist.`]);
-            setDetails(data);
-        }, 'message');
+            try {
+                //
+                // FETCH
+                //
+                //[!TEST]
+                // const endpoint = `error`;
+
+                //
+                // Production
+                const endpoint = `courses/${id}`;
+                const method = 'GET';
+                const url = `http://localhost:5000/api/${endpoint}`;
+                const options = {
+                    method,
+                    headers: {},
+                };
+
+                const res = await fetch(url, options);
+                if (!res.ok) {
+                    // nav('/error', { state: { errors: [msg] } });
+                    addErrorMessage(`HTTP Status Code: ${res.status}`);
+                    nav('/error');
+                    return;
+                }
+                const data = await res.json();
+                if (!data) {
+                    msg = `Course ${id} does not exist.`
+                    // nav('/notfound',
+                    //     { state: { errors: [msg] } });
+                    addErrorMessage(msg);
+                    nav('/notfound');
+                    return;
+                }
+                if (res.status === 200) setDetails(data);
+            } catch (err) {
+                // nav('/error',
+                //     { state: { errors: [`Error Code: CD-UE-01`] } });
+                console.log(err);
+                addErrorMessage(`Error Code: CD-UE-01`);
+                nav('/error');
+            }
+        })();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
-        if (!authData) { setAuthenticated(false); return; }
-        if (authenticated === null) {
-            (async () => {
-                const pass = await getPassword();
-                const user = await actions.signIn(authData.user.emailAddress, pass);
-                if (user) setAuthenticated(true);
-                else setAuthenticated(false);
-            })();
+        try {
+            if (!authData) { setAuthenticated(false); return; }
+            if (authenticated === null) {
+                (async () => {
+                    const pass = await getPassword();
+                    const user = await actions.signIn(authData.user.emailAddress, pass);
+                    if (user) setAuthenticated(true);
+                    else setAuthenticated(false);
+                })();
+            }
+        } catch (err) {
+            console.log(err);
+            addErrorMessage(`Error Code: CD-UE-02`);
+            nav('/error');
+            // nav('/error',
+            //     { state: { errors: [`Error Code: CD-UE-02`] } });
         }
     }, [authenticated]);
 
     const handleDelete = async () => {
         if (authData) {
-            iTry(async () => {
+            try {
+                // 500 Test
+                //
+                // const endpoint = `error`;
+                // const method = 'GET';
+
+                // React Test
+                //
+                // const endpoint = `courses/${id}`;
+                // endpoint = `error`;
+                // const method = 'DELETE';
+
+                // Production
                 const endpoint = `courses/${id}`;
                 const method = 'DELETE';
+
                 const url = `http://localhost:5000/api/${endpoint}`;
                 const options = {
                     method,
@@ -67,28 +122,39 @@ const CourseDetail = () => {
                 };
 
                 const pass = await getPassword();
-                console.log(`${authData.user.emailAddress}:${pass}`);
                 const encodedCredentials = btoa(`${authData.user.emailAddress}:${pass}`);
                 options.headers.Authorization = `Basic ${encodedCredentials}`;
 
                 const res = await fetch(url, options);
 
-                console.log(res);
+                // "Touch" fetchCourses > Trigger Courses.js useEffect() > Re-render
                 if (res.status === 204) {
-                    // "Touch" fetchCourses > Trigger Courses.js useEffect() > Re-render 
                     actions.setFetchCourses(prevFetchCourses => !prevFetchCourses);
                     nav('/');
                     return;
                 }
-                if (res.status === 400) return;
-                throw new Error("handleDelete");
-
-            }, 'message');
+                // console.log(res);
+                const data = await res.json();
+                // console.log(data);
+                // if (res.status === 400) {
+                //     addErrorMessage(data.msg);
+                //     nav('/error');
+                //     return;                
+                // }
+                addErrorMessage(`HTTP Status Code ${res.status}: ${data.msg}`);
+                nav('/error');
+                // nav('/error', { state: { errors: [`HTTP Status Code: ${res.status}`] } });
+            } catch (err) {
+                console.log(err);
+                addErrorMessage(`Error Code: CD-hD-01`);
+                nav('/error');
+                // nav('/error',
+                //     { state: { errors: [`Error Code: CD-hD-01`] } });
+            }
         }
-        nav('/');
-        // [!TODO] Navigate to ErrorDisplay
     }
 
+    // if authdata
     if (details) {
         const firstName = details.student.firstName;
         const lastName = details.student.lastName;
@@ -118,8 +184,7 @@ const CourseDetail = () => {
                             {authenticated && writePermission
                                 ? <Link
                                     className="button"
-                                    onClick={handleDelete}
-                                    to="/">Delete Course</Link>
+                                    onClick={handleDelete}>Delete Course</Link>
                                 : null}
                             <Link
                                 className="button button-secondary"
@@ -169,25 +234,26 @@ const CourseDetail = () => {
             </>
         );
     }
-    if (errors.length > 0) {
-        return <>
-            <main>
-                <div className="actions--bar">
-                    <div className="wrap">
-                        <Link
-                            className="button button-secondary"
-                            to='/'>Return to List</Link>
-                    </div>
-                </div>
+    // if (errors) {
+    // //if (errors.length > 0) {
+    //     return <>
+    //         <main>
+    //             <div className="actions--bar">
+    //                 <div className="wrap">
+    //                     <Link
+    //                         className="button button-secondary"
+    //                         to='/'>Return to List</Link>
+    //                 </div>
+    //             </div>
 
-                <div className="wrap">
-                    <h2>Course Detail</h2>
-                    <ErrorList errors={errors} />
-                </div>
-            </main>
-        </>
-    }
-    return <p>Loading...</p>
+    //             <div className="wrap">
+    //                 <h2>Course Detail</h2>
+    //                 <ErrorList errors={errors} />
+    //             </div>
+    //         </main>
+    //     </>
+    // }
+    return <div className="wrap"><p>Loading...</p></div>;
 }
 
 export default CourseDetail;

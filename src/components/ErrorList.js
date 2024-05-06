@@ -7,7 +7,7 @@ const ErrorList = ({ errors }) => {
     if (errors.length) {
         errorList = (
             <div className='validation--errors'>
-                <h3 className='error-list'>Errors</h3>
+                <h3 className='error-list'>Error List</h3>
                 <div className='error-list'>
                     <ul className='error-list'>
                         {errors.map((err, i) => <li key={i}>{err}</li>)}
