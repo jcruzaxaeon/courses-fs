@@ -1,15 +1,22 @@
-/////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 //  client\src\components\UpdateCourse.js
-/////////////////////////////////////////////////////////////////////////////////////////////////
+
 import { useState, useEffect, useRef, useContext } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 
 import UserContext from "../contexts/UserContext.js";
 import ErrorMessageContext from "../contexts/ErrorMessageContext.js";
 import ErrorList from "./ErrorList.js";
-import { iTry } from "../utils/i-try.js";
 import { getPassword } from "../utils/cryptoUtils.js";
 
+/**
+ * ## `UpdateCourse`-Component
+ * 
+ * @module UpdateCourse
+ * @returns {JSX.Element} `<main>` course-update form
+ * @ReactComponent
+ */
 const UpdateCourse = () => {
     const { id } = useParams();
     const nav = useNavigate();
@@ -22,13 +29,13 @@ const UpdateCourse = () => {
     // let [fn, ln] = [null, null];
     const [errors, setErrors] = useState([]);
 
-    // Course Data
+    // Course Data from Form-Inputs
     const title = useRef(null);
     const description = useRef(null);
     const estimatedTime = useRef(null);
     const materialsNeeded = useRef(null);
 
-    // Try to find Course
+    // Try to find course data to populate inputs 
     useEffect(() => {
         (async () => {
             try {
@@ -41,37 +48,43 @@ const UpdateCourse = () => {
                 };
 
                 const res = await fetch(url, options);
-                if(!res.ok) {
+                let data = null;
+                try { data = await res.json(); } catch {}
+
+                // ERROR GUARD-CLAUSES
+                // Catch codes != 200-series HTTP status codes
+                if (!res.ok) {
                     addErrorMessage(`HTTP Status Code: ${res.status}`);
                     nav('/error');
                     return;
                 }
-
-                const data = await res.json();
+                // Catch falsy `data` when requested `id` DNE.
                 if (!data) {
                     addErrorMessage(`Course ${id} does not exist.`);
                     nav('/notfound');
-                    // nav('/notfound',
-                    //     { state: { errors: [`Course ${id} does not exist.`] }, },);
                     return;
                 }
-
+                // Check for write permission
                 const writePermission = authData.user.id === data.userId;
                 if (!writePermission) {
                     addErrorMessage(`Course is owned by a different user.`);
                     nav('/forbidden');
-                    // nav('/forbidden',
-                    // { state: { errors: [`Course is owned by a different user.`] }, },);
                     return;
                 }
-
-                setCourse(data);
-                setLoading(false);
-                setFn(data.student.firstName);
-                setLn(data.student.lastName);
+                // (SUCCESS)
+                if (res.status === 200) {
+                    setCourse(data);
+                    setLoading(false);
+                    setFn(data.student.firstName);
+                    setLn(data.student.lastName);
+                    return;
+                }
+                // (Default) Catch unexpected 200-series HTTP status codes
+                addErrorMessage(`HTTP Status Code ${res.status}: ${data.msg}`);
+                nav('/error');
             } catch (err) {
-                console.log(err);
-                addErrorMessage(`Error Code: UpCo-uE-01`);
+                // Catch network issues 
+                addErrorMessage(`Error Code: UpCo-uE1`);
                 nav('/error');
             }
         })();
@@ -93,7 +106,6 @@ const UpdateCourse = () => {
 
                 const endpoint = `courses/${id}`;
                 const url = `http://localhost:5000/api/${endpoint}`;
-                console.log("New Course: ", newCourse);
                 const options = {
                     method: 'PUT',
                     body: JSON.stringify(newCourse),
@@ -115,24 +127,34 @@ const UpdateCourse = () => {
                 // }
 
                 const res = await fetch(url, options);
+                let data = null;
+                try { data = await res.json(); } catch {}
 
+                // ERROR GUARD-CLAUSES
+                // (SUCCESS) Course updated
                 if (res.status === 204) {
                     nav(`/courses/${id}`);
                     return;
                 }
+                // Catch empty required-fields; Populate errors for <ErrorList />
                 if (res.status === 400) {
-                    const data = await res.json();
                     setErrors(data.errors);
                     return;
                 }
-                if(!res.ok) {
+                // Catch codes != 200-series HTTP status codes
+                if (!res.ok) {
                     addErrorMessage(`HTTP Status Code: ${res.status}`);
                     nav('/error');
                     return;
                 }
-            } catch (err) {
+                // (Default) Catch unexpected 200-series HTTP status codes
+                addErrorMessage(`HTTP Status Code ${res.status}: ${data.msg}`);
+                nav('/error');
+            }
+            catch (err) {
+                // Catch network issues 
                 console.log(err);
-                addErrorMessage(`Error Code: UpCo-hS-01`);
+                addErrorMessage(`Error Code: UpCo-hS1`);
                 nav('/error');
             }
         })();
@@ -143,31 +165,7 @@ const UpdateCourse = () => {
         nav(`/courses/${id}`);
     }
 
-    // const handleReturn = e => {
-    //     e.preventDefault();
-    //     nav(`/`);
-    // }
-
-    // if (course) {
-    //     // console.log("authData: ", authData);
-    //     // console.log("if(courses) course: ", course);
-    //     const writePermission = authData.user.id === course.userId;
-    //     if (!writePermission) {
-    //         addErrorMessage(`Course is owned by a different user.`);
-    //         nav('/forbidden');
-    //         // nav('/forbidden',
-    //         // { state: { errors: [`Course is owned by a different user.`] }, },);
-    //         return;
-    //     }
-
-    //     fn = course.student.firstName;
-    //     ln = course.student.lastName;
-    // }
-
-    // setTimeout(() => { console.log('wait') }, 5000);
-
     if (authData && course && !loading) {
-        // console.log("inside", errors);
         return (
             <main>
                 <div className="wrap">
@@ -176,6 +174,7 @@ const UpdateCourse = () => {
                     <form onSubmit={handleSubmit}>
                         <div className="main--flex">
                             <div>
+                                {/* COURSE TITLE */}
                                 <label htmlFor="courseTitle">Course Title</label>
                                 <input
                                     ref={title}
@@ -189,6 +188,7 @@ const UpdateCourse = () => {
 
                                 <p>By {fn} {ln}</p>
 
+                                {/* COURSE DESCRIPTION */}
                                 <label htmlFor="courseDescription">Course Description</label>
                                 <textarea
                                     ref={description}
@@ -197,9 +197,9 @@ const UpdateCourse = () => {
                                     defaultValue={errors.length === 0
                                         ? course.description
                                         : null} />
-                                {/* </textarea> */}
                             </div>
                             <div>
+                                {/* ESTIMATED TIME */}
                                 <label htmlFor="estimatedTime">Estimated Time</label>
                                 <input
                                     ref={estimatedTime}
@@ -210,6 +210,7 @@ const UpdateCourse = () => {
                                         ? course.estimatedTime
                                         : null} />
 
+                                {/* MATERIALS NEEDED */}
                                 <label htmlFor="materialsNeeded">Materials Needed</label>
                                 <textarea
                                     ref={materialsNeeded}
@@ -218,7 +219,6 @@ const UpdateCourse = () => {
                                     defaultValue={errors.length === 0
                                         ? course.materialsNeeded
                                         : null} />
-                                {/* </textarea> */}
                             </div>
                         </div>
                         <button className="button"

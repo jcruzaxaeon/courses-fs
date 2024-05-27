@@ -1,6 +1,20 @@
-////////////////////////////////////////////////////////////////////////////////////////////////////
+
 //  client\src\components\ErrorList.js
-////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * ## `ErrorList`-Component
+ * Error message list
+ * 
+ * ### Returns
+ * - `<div>` containing a `<ul>` of `<li>`-error-messages produced with `errors.map()`
+ * - Used by: `Error.js`
+ * 
+ * @module ErrorList
+ * @param {Object} props
+ * @param {[string]} props.errors - Array of error messages
+ * @returns {JSX.Element | null} 
+ * @ReactComponent
+ */
 const ErrorList = ({ errors }) => {
     let errorList = null;
 
@@ -18,26 +32,6 @@ const ErrorList = ({ errors }) => {
     }
 
     return errorList;
-
-    //TURNERY EXAMPLE
-    // return errors.length
-    //     ? ( <div>
-    //             <h2 className="validation--errors--label">Validation errors</h2>
-    //             <div className="validation-errors">
-    //                 <ul>
-    //                     {errors.map((error, i) => <li key={i}>{error}</li>)}
-    //                 </ul>
-    //             </div>
-    //         </div> )
-    //     : null
-
-    // <div class="validation--errors">
-    //    <h3>Validation Errors</h3>
-    //    <ul>
-    //       <li>Please provide a value for "Title"</li>
-    //       <li>Please provide a value for "Description"</li>
-    //    </ul>
-    // </div>
 }
 
 export default ErrorList;

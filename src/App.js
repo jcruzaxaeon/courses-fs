@@ -1,12 +1,13 @@
+
+
 //  src\App.js
 
 import './App.css';
 import { Routes, Route } from 'react-router-dom';
-// import Test from './components/Test.js';
 import Header from './components/Header.js';
 import Courses from './components/Courses.js';
 import CourseDetail from './components/CourseDetail.js';
-import UserSignin from './components/UserSignIn.js';
+import UserSignIn from './components/UserSignIn.js';
 import UserSignOut from './components/UserSignOut.js';
 import UserSignUp from './components/UserSignUp.js';
 import CreateCourse from './components/CreateCourse.js';
@@ -16,6 +17,13 @@ import NotFound from './components/NotFound.js';
 import Forbidden from './components/Forbidden.js';
 import Error from './components/Error.js';
 
+/**
+ * # App
+ * The main application component.
+ *
+ * @component App
+ * @returns {JSX.Element} The App component.
+ */
 function App() {
    return (
       <div className="App">
@@ -26,7 +34,7 @@ function App() {
             <Route element={<PrivateRoute />}>
                <Route path='/courses/create' element={<CreateCourse />} />
                <Route path='/courses/:id/update' element={<UpdateCourse />} /></Route>
-            <Route path='/signin' element={<UserSignin />} /> {/* GET  /api/users */}
+            <Route path='/signin' element={<UserSignIn />} /> {/* GET  /api/users */}
             <Route path='/signup' element={<UserSignUp />} /> {/* POST /api/users */}
             <Route path='/signout' element={<UserSignOut />} />
             <Route path='/notfound' element={<NotFound />} />

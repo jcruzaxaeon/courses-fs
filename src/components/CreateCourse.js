@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////////////////////////
+
 //  client\src\components\CreateCourse.js
-/////////////////////////////////////////////////////////////////////////////////////////////////
+
 import { useContext, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -10,6 +10,14 @@ import ErrorList from "./ErrorList.js";
 
 import { getPassword } from '../utils/cryptoUtils.js';
 
+/**
+ * ## `CreateCourse`
+ * Creates a new course
+ * 
+ * @module CreateCourse
+ * @returns {JSX.Element}
+ * @ReactComponent
+ */
 const CreateCourse = () => {
    const { authData } = useContext(UserContext);
    const { addErrorMessage } = useContext(ErrorMessageContext);
@@ -22,6 +30,11 @@ const CreateCourse = () => {
    const materialsNeeded = useRef(null);
    const [errors, setErrors] = useState([]);
 
+   /**
+    * ## Form Submit
+    * - Handles form-submission for creating a new course
+    * @param {Event} e - The form-submit event.
+    */
    const handleSubmit = async e => {
       e.preventDefault();
 
@@ -49,29 +62,46 @@ const CreateCourse = () => {
          options.headers.Authorization = `Basic ${encodedCredentials}`;
 
          const res = await fetch(url, options);
+         // let text = null;
+         // console.log(res);
+         // console.log(res.text());
+         let data = null;
+         try { data = await res.json(); } catch {}
 
+         // ERROR GUARD-CLAUSES
+         // (SUCCESS)
          if (res.status === 201) {
             nav('/');
             return;
          }
-         // Populate <ErrorList /> for empty required-inputs
-         if (res.status === 400) {
-            const data = await res.json();
-            setErrors(data.errors);
-            return;
-         }
+         // Catch codes != 200-series HTTP status codes
          if (!res.ok) {
             addErrorMessage(`HTTP Status Code: ${res.status}`);
             nav('/error');
             return;
          }
-      } catch (err) {
+         // Catch empty required-fields; Populate errors for <ErrorList />
+         if (res.status === 400) {
+            setErrors(data.errors);
+            return;
+         }
+         // (Default) Catch unexpected 200-series HTTP status codes
+         addErrorMessage(`HTTP Status Code ${res.status}: ${data.msg}`);
+         nav('/error');
+      }
+
+      catch (err) {
+         // Catch network issues 
          console.log(err);
          addErrorMessage(`Error Code: CC-hS-01`);
          nav('/error');
       }
    }
 
+   /**
+    * Handles `Cancel`-button click
+    * @param {Event} e - Click-event.
+    */
    const handleCancel = e => {
       e.preventDefault();
       nav('/');
@@ -86,7 +116,6 @@ const CreateCourse = () => {
                <form onSubmit={handleSubmit}>
                   <div className="main--flex">
                      <div>
-
                         {/* COURSE TITLE */}
                         <label htmlFor="courseTitle">Course Title</label>
                         <input
@@ -114,6 +143,8 @@ const CreateCourse = () => {
                            name="estimatedTime"
                            type="text"
                            defaultValue="" />
+
+                        {/*MATERIALS NEEDED*/}
                         <label htmlFor="materialsNeeded">Materials Needed</label>
                         <textarea
                            ref={materialsNeeded}

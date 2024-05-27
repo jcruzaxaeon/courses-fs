@@ -1,26 +1,33 @@
-/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 //  client\src\components\Courses.js
-//  - Main / Landing page
-////////////////////////////////////////////////////////////////////////////////////////////////////
+//  - (MAIN-PAGE)
+
 import { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from 'react-router-dom';
-// import { iTry } from "../utils/i-try.js";
-import UserContext from "../contexts/UserContext.js";
 import ErrorMessageContext from "../contexts/ErrorMessageContext.js";
+import CourseContext from "../contexts/CourseContext.js";
 
+/**
+ * ## `Courses`
+ * Page Component
+ * - Fetch and render all courses
+ * - MAIN-PAGE (Landing Page)
+ * 
+ * @module Courses
+ * @returns {JSX.Element} `<main>` shows all courses
+ * @ReactComponent
+ */
 const Courses = () => {
-   const { fetchCourses } = useContext(UserContext);
+   const { fetchCourses } = useContext(CourseContext);
    const { addErrorMessage } = useContext(ErrorMessageContext);
    const [courses, setCourses] = useState(null);
    const nav = useNavigate();
 
    useEffect(() => {
       (async () => {
-         let msg = '';
-
          try {
             const endpoint = 'courses';
-            // const endpoint = 'error';
             const method = 'GET';
             const url = `http://localhost:5000/api/${endpoint}`;
             const options = {
@@ -29,49 +36,55 @@ const Courses = () => {
             };
 
             const res = await fetch(url, options);
-            // const data = await res.json();
+            let data = null;
+            try { data = await res.json(); } catch {}
+
+            // ERROR GUARD-CLAUSES
+            // Catch codes != 200-series HTTP status codes
             if (!res.ok) {
-               msg = `HTTP Status Code: ${res.status}`;
-               // nav('/error', { state: { errors: [msg] } });
-               addErrorMessage(msg);
+               addErrorMessage(`HTTP Error ${res.status} ${res.statusText}`);
                nav('/error');
                return;
-           }
-            setCourses(await res.json());
-         } catch (err) {
-            msg = `Error Code: Co-UE-01`;
-            console.log(err);
-            // nav('/error',
-            //    { state: { errors: [`Error Code: Co-UE-01`] } });
-            addErrorMessage(msg);
+            }
+            // (SUCCESS)
+            if (res.status === 200) {
+               setCourses(data);
+               return;
+            }
+            // (Default) Catch unexpected 200-series HTTP status codes
+            addErrorMessage(`HTTP Status Code ${res.status}: ${data.msg}`);
             nav('/error');
          }
-
-         // iTry(async () => {
-         //    const endpoint = 'courses';
-         //    const method = 'GET';
-         //    const url = `http://localhost:5000/api/${endpoint}`;
-         //    const options = {
-         //       method,
-         //       headers: {},
-         //    };
-
-         //    const response = await fetch(url, options);
-         //    // const data = await response.json();
-         //    setCourses(await response.json());
-         // }, 'Courses not found.');
+         // Catch network issues
+         catch (err) {
+            console.log(err);
+            addErrorMessage(`Encountered a Network Error (Co-uE1)`);
+            nav('/error');
+         }
       })();
       // eslint-disable-next-line react-hooks/exhaustive-deps
-   }, [fetchCourses]);
+   }, [fetchCourses]); // Triggered on course deletion
 
+   if (!courses) return <div className="wrap"><p>Loading...</p></div>;
+   // [!TODO] Improve user-experience for "no-courses" error handling
+   if (courses.length === 0) return (
+      <>
+         <div id="root">
+            <main>
+               <div className="wrap main--grid">
+                  <p>No classes found in database.</p>
+               </div>
+            </main>
+         </div>
+      </>
+   );
+   
+   // (Main)
    if (courses) {
       return (
          <div id="root">
             <main>
                <div className="wrap main--grid">
-                  {/***********************************************************************************
-                  **  COURSE LIST 
-                  ***********************************************************************************/}
                   {courses.map(c => (
                      <Link
                         key={c.title}

@@ -20,7 +20,9 @@
 auto-readme.md
 ext.lnk
 bak.lnk
+og-*
 og-PrivateRoute.js
+og-readme.md
 
 npm-debug.log*
 yarn-debug.log*

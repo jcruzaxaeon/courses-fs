@@ -1,20 +1,30 @@
-////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 //  # client\src\components\Header.js
-//  - Header.js
-////////////////////////////////////////////////////////////////////////////////////////////////////
 
 import { useContext } from 'react';
 import UserContext from '../contexts/UserContext.js';
 
 import { Link } from "react-router-dom";
 
+/**
+ * ## `Nav`-Component
+ * Abstracted navigation bar (`<nav>`)
+ * - Used by: Header.js
+ * 
+ * ### Authentication Status
+ * 1. !Authenticated shows `Sign up`-, and `Sign in`-Links
+ * 2. Authenticated shows a welcome message, and `Sign Out`-Link
+ * 
+ * @module Nav
+ * @returns {JSX.Element} `<nav>` to be used in `<header>`
+ * @ReactComponent
+ */
 const Nav = () => {
     const { authData } = useContext(UserContext);
-    // console.log(authData);
     let name = 'noname';
     //[!TODO] Update to remove on cookie
     if (authData) name = `${authData.user.firstName} ${authData.user.lastName}`;
-    //console.log(authData);
 
     return (
         <nav>
@@ -24,7 +34,6 @@ const Nav = () => {
                     <li><Link className="signin" to="/signin">Sign in</Link></li></ul>
                 : <ul className="header--signedin">
                     <li><span>Welcome {name} </span></li>
-                    {/* <Link className="settings" to="/settings">Settings</Link> */}
                     <li><Link className="signout" to="/signout">Sign Out</Link></li></ul>}
         </nav>);
 }

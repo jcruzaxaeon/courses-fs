@@ -1,21 +1,28 @@
-////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 //  client\src\components\UserSignIn.js
-////////////////////////////////////////////////////////////////////////////////////////////////////
 
 import { useContext, useRef, useState } from 'react';
-import { /*Link,*/ useNavigate, useLocation } from 'react-router-dom';
-// import ThemeContext from '../context/ThemeContext';
+import { useNavigate, useLocation } from 'react-router-dom';
 import UserContext from '../contexts/UserContext.js';
+import ErrorMessageContext from "../contexts/ErrorMessageContext.js";
 import ErrorList from './ErrorList.js';
 
-const UserSignin = () => {
+/**
+ * ## `UserSignIn`
+ * Page Component
+ * 
+ * @module UserSignIn
+ * @returns {JSX.Element} `<main>` signin form
+ * @ReactComponent
+ */
+const UserSignIn = () => {
     const { actions } = useContext(UserContext);
-    const nav = useNavigate(); //"Call the useNavigate()-hook"
+    const { addErrorMessage } = useContext(ErrorMessageContext);
+    const nav = useNavigate(); //JARGON: "Call the useNavigate()-hook"
     const location = useLocation();
     const from = location.state?.from || '/';
 
-
-    // State
     const emailAddress = useRef(null);
     const password = useRef(null);
     const [errors, setErrors] = useState([]);
@@ -23,6 +30,7 @@ const UserSignin = () => {
     const handleSubmit = async e => {
         e.preventDefault();
 
+        // References
         const rEmailAddress = emailAddress.current.value;
         const rPassword = password.current.value;
 
@@ -34,7 +42,10 @@ const UserSignin = () => {
                 return;
             }
             setErrors(['Access Denied.']);
-        } catch (err) { console.log(err); }
+        } catch (err) {
+            addErrorMessage(`Encountered a sign-in error.`);
+            nav('/error');
+        }
     }
 
     const handleCancel = e => {
@@ -51,31 +62,31 @@ const UserSignin = () => {
                     <ErrorList errors={errors} />
                     <form onSubmit={handleSubmit}>
                         <label htmlFor="emailAddress">Email Address</label>
-                        <input 
+                        <input
                             id="emailAddress"
-                            name="emailAddress" 
-                            type="email" 
+                            name="emailAddress"
+                            type="email"
                             defaultValue=""
                             ref={emailAddress} />
                         <label htmlFor="password">Password</label>
-                        <input 
+                        <input
                             id="password"
                             name="password"
                             type="password"
                             ref={password}
                             defaultValue="" />
-                        <button 
+                        <button
                             className="button"
                             type="submit">Sign In</button>
-                        <button 
+                        <button
                             className="button button-secondary"
                             onClick={handleCancel}>Cancel</button>
                     </form>
-                    <p>Don't have a user account? Click here to <a href="sign-up.html">sign up</a>!</p>
+                    <p>Don't have a user account? Click here to <a href="/signup">sign up</a>!</p>
                 </div>
             </main>
         </>
     );
 }
 
-export default UserSignin;
+export default UserSignIn;
